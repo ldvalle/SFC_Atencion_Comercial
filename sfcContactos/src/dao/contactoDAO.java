@@ -444,7 +444,7 @@ System.out.println("punto 9");
 			pstm.setString(6, regConta.co_suc_contacto.trim());
 			pstm.setTimestamp(7, tFechaInicio);	//fecha creacion
 			pstm.setString(8, sRolOrigen);
-			pstm.setString(9, sArea);
+			pstm.setString(9, sArea); //SIC0
 			//pstm.setDate(10, (java.sql.Date) regOrden.vencimiento);  //Vencimiento Real
 			//pstm.setDate(11, (java.sql.Date) regOrden.vencimiento);	//Vencimiento
 			pstm.setString(10, regMot.mo_fecha_vto);

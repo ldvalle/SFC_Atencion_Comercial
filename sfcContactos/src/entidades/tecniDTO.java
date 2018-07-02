@@ -22,5 +22,5 @@ public class tecniDTO {
 	public String	tec_alimentador;
 	public String	tec_subestacion; 
 	public String	tec_nom_subest;
-	
+
 }

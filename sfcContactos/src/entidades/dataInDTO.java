@@ -13,8 +13,13 @@ public class dataInDTO {
 	   public String	sub_motivo;
 	   public String	trabajo;
 	   public String	observaciones;
+	   public int		tema;
+	   public String	canal;
+	   public String	nroReclamo;
+	   public String	tarifa;
+	   public String	origen;
 
-	   public dataInDTO(interfaceDTO regIn) {
+	   public dataInDTO(interfaceDTO regIn, String sTipoSol) {
 		   String s = regIn.data_in;
 		   JSONParser parser = new JSONParser();
 
@@ -24,12 +29,25 @@ public class dataInDTO {
 	          JSONArray array = (JSONArray)obj;
 
 	          JSONObject obj1 = (JSONObject)array.get(0);
-	          this.numero_cliente = (Long) obj1.get("numero_cliente");
-	          this.sucursal=(String) obj1.get("sucursal");
-	          this.motivo=(String) obj1.get("motivo");
-	          this.sub_motivo=(String) obj1.get("sub_motivo");
-	          this.trabajo=(String) obj1.get("trabajo");
-	          this.observaciones=(String) obj1.get("observaciones");
+	          if(sTipoSol.equals("CONTACTO")) {
+		          this.numero_cliente = (Long) obj1.get("numero_cliente");
+		          this.sucursal=(String) obj1.get("sucursal");
+		          this.motivo=(String) obj1.get("motivo");
+		          this.sub_motivo=(String) obj1.get("sub_motivo");
+		          this.trabajo=(String) obj1.get("trabajo");
+		          this.observaciones=(String) obj1.get("observaciones");
+	          }else if(sTipoSol.equals("CALCOM")) {
+	        	  this.numero_cliente = (Long) obj1.get("numero_cliente");
+	        	  this.sucursal=(String) obj1.get("sucursal");
+	        	  this.tema=(int) obj1.get("tema");
+	        	  this.motivo=(String) obj1.get("motivo");
+	        	  this.canal=(String) obj1.get("canal");
+	        	  this.nroReclamo=(String) obj1.get("nro_reclamo");
+	        	  this.tarifa=(String) obj1.get("tarifa");
+	        	  this.origen=(String) obj1.get("origen");
+	          }else {
+	        	  System.out.println("Tipo de Solicitud Comercial Desconocida.");
+	          }
 	          
 	      }catch(ParseException pe){
 	          System.out.println("position: " + pe.getPosition());

@@ -107,4 +107,8 @@ public class clienteDTO {
 	public Date		fecha_devolucion;
 	public String	tiene_cobro_rec;
 	public long		numero_medidor;
+	public double	saldo_calculado;
+	public long		numero_medidor2;
+	public long		numero_medidor3;
+	
 }

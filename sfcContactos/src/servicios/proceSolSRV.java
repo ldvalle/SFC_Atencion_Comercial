@@ -53,7 +53,7 @@ public class proceSolSRV {
 		tecniDTO miTecni=null;
 		
 		//Cargar Data JSON
-		dataInDTO regData = new dataInDTO(regInter);
+		dataInDTO regData = new dataInDTO(regInter, "CONTACTO");
 
 		//Cargar Parametros
 		parametrosDTO regParam = null;

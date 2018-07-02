@@ -15,11 +15,11 @@ public class recRecUniDTO {
 	public String	trabajo_requerido;
 	public String	motivo_empresa;
 	public String	motivo_cliente;
-	public String	fecha_ini_contacto; //Date
+	public String	fecha_ini_contacto; //DateTime
 	public int		plazo;
-	public String	fecha_vto_con;		//Date
-	public String	fecha_ingreso_ct;	//Date
-	public String	fecha_vto_ct ;		//Date
+	public String	fecha_vto_con;		//DateTime
+	public String	fecha_ingreso_ct;	//DateTime
+	public String	fecha_vto_ct ;		//DateTime
 	public String	nombre_cliente;
 	public String	telefono;
 	public String	cod_calle;
@@ -54,8 +54,8 @@ public class recRecUniDTO {
 	public String	mot_pot_futura;
 	public Double	potencia_hp_solic;
 	public String	nivel_tension_sol;
-	public String	fecha_ini_edesur;	//Date
-	public String	fecha_excepcion;	//Date
+	public String	fecha_ini_edesur;	//DateTime
+	public String	fecha_excepcion;	//DateTime
 	
 	public recRecUniDTO(Long lNroMensaje, String sReincidencia, String sCodAgrupa, contactoDTO regConta, motContactoDTO regMot, clienteDTO miCliente, parametrosDTO regPar, tecniDTO regTecni, temaTrabajo miTema) {
 		String sTipoReclamo="";
