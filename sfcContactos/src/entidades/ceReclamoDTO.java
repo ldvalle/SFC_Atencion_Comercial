@@ -19,6 +19,8 @@ public class ceReclamoDTO {
 	private long	re_cod_cliente;
 	private String	re_tarifa;
 	private String	re_sucursal;
+	private String	sTipoDocumento;
+	private String	sDescriTema;
 
 	private Collection<Date> lstFeriados;
 	
@@ -123,6 +125,20 @@ public class ceReclamoDTO {
 	}
 	public void setSucursal(String re_sucursal) {
 		this.re_sucursal = re_sucursal;
+	}
+
+	public String getTipoDocumento() {
+		return sTipoDocumento;
+	}
+	public void setTipoDocumento(String sTipoDocumento) {
+		this.sTipoDocumento = sTipoDocumento;
+	}
+
+	public String getDescriTema() {
+		return sDescriTema;
+	}
+	public void setDescriTema(String sDescriTema) {
+		this.sDescriTema = sDescriTema;
 	}
 	
 	private Date calculaVenc(Date d, int iPlazo, boolean diasCorridos) {

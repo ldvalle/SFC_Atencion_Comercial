@@ -306,7 +306,7 @@ public class calcomDAO {
 		return sValor;
 	}
 
-	private String getNroModif(String sTipo, String sArea) throws SQLException {
+	public String getNroNumao(String sTipo, String sArea) throws SQLException {
 		String sNroModif="";
 		String sValor="";
 		long lValor=0;
@@ -354,12 +354,14 @@ public class calcomDAO {
 		
 		if(ParLocal.cambiaMarcas.equals("S")) {
 			if(ParLocal.cambiaCobrabilida || ParLocal.cambiaCorte) {
-				sNroModif = getNroModif("MOD", delivery.getAreaOrigen());
+				sNroModif = getNroNumao("MOD", delivery.getAreaOrigen());
 			}
 		}
 		
 		try(Connection connection = UConnection.getConnection()){
 			connection.setAutoCommit(false);
+			
+			// ************ Registro el Reclamo ************
 			
 			//Actualizar Marcas cliente
 			if(ParLocal.cambiaMarcas.equals("S")) {
@@ -421,6 +423,9 @@ public class calcomDAO {
 				System.out.println("Falló insert de ReclamoInterv.");
 				return false;
 			}
+
+			//******** Registro el Mensaje y la Orden ***********
+			
 			
 			connection.commit();
 		}
@@ -606,6 +611,164 @@ public class calcomDAO {
 	
 		return true;
 	}
+	
+	public long getNroMensaje() throws SQLException {
+		long nroMensaje=0;
+		
+		try(Connection connection = UConnection.getConnection()){
+			try(PreparedStatement stmt = connection.prepareStatement(SEL_NRO_MENSAJE)){
+				try(ResultSet rs = stmt.executeQuery()){
+					if(rs.next()) {
+						nroMensaje = rs.getLong(1);
+					}
+				}
+			}
+		}
+		return nroMensaje;
+	}
+
+	public String getDesriTabla(String sNomTabla, String sCodigo) throws SQLException {
+		String sDescri="";
+		
+		try(Connection connection = UConnection.getConnection()){
+			try(PreparedStatement stmt = connection.prepareStatement(SEL_DESCRI_TABLA)){
+				stmt.setString(1, sNomTabla);
+				stmt.setString(2, sCodigo);
+				try(ResultSet rs = stmt.executeQuery()){
+					if(rs.next()) {
+						sDescri = rs.getString(1);
+					}
+				}
+			}
+		}
+		return sDescri;
+	}
+
+	public String getTipoDocumento(int iTema) throws SQLException {
+		String sDescri="";
+		String sTema = Integer.toString(iTema);
+		
+		try(Connection connection = UConnection.getConnection()){
+			try(PreparedStatement stmt = connection.prepareStatement(SEL_TIPO_DOCUMENTO)){
+				stmt.setString(1, sTema);
+				try(ResultSet rs = stmt.executeQuery()){
+					if(rs.next()) {
+						sDescri = rs.getString(1);
+					}
+				}
+			}
+		}
+		return sDescri;
+	}
+	
+	public reclaTecniProce getReclaTecniProce(int Motivo, int Tema) throws SQLException {
+		reclaTecniProce recla = new reclaTecniProce();
+		
+		try(Connection connection = UConnection.getConnection()){
+			try(PreparedStatement stmt = connection.prepareStatement(SEL_RECLA_TECNI_PROCE)){
+				stmt.setString(1, Integer.toString(Motivo));
+				stmt.setString(2, Integer.toString(Tema));
+
+				try(ResultSet rs = stmt.executeQuery()){
+					if(rs.next()) {
+						recla.setCarProcPendiente(rs.getString(1));
+						recla.setPlazo(rs.getInt(2));
+						recla.setCodAgrupacion(rs.getString(3));
+						recla.setPlazoAdic1(rs.getInt(4));
+						recla.setPlazoAdic2(rs.getInt(5));
+					}
+				}
+			}
+		}
+		return recla;
+	}
+
+	
+	public String getProveedor(String sCarpeta) throws SQLException {
+		String sProve="";
+		
+		try(Connection connection = UConnection.getConnection()){
+			try(PreparedStatement stmt = connection.prepareStatement(SEL_PROVEEDOR)){
+				stmt.setString(1, sCarpeta);
+				try(ResultSet rs = stmt.executeQuery()){
+					if(rs.next()) {
+						sProve = rs.getString(1) + "|" + rs.getString(2);
+					}
+				}
+			}
+		}
+		return sProve.trim();
+	}
+
+	public tecniDTO getTecni(long lNroCliente, String sTarifa) throws SQLException {
+		tecniDTO miTecni = new tecniDTO();
+
+		if (sTarifa.equals("T1")) {
+			try(Connection connection = UConnection.getConnection()){
+				try(PreparedStatement stmt = connection.prepareStatement(SEL_TECNI)){
+					stmt.setLong(1, lNroCliente);
+					try(ResultSet rs = stmt.executeQuery()){
+						if(rs.next()) {
+							miTecni.codigo_voltaje=rs.getString(1);
+							miTecni.tec_cod_suc=rs.getString(2); 
+							miTecni.tec_sucursal=rs.getString(3); 
+							miTecni.tec_cod_part=rs.getString(4); 
+							miTecni.tec_partido=rs.getString(5);
+							miTecni.tec_cod_local=rs.getString(6);
+							miTecni.tec_localidad=rs.getString(7); 
+							miTecni.tec_cod_calle=rs.getString(8); 
+							miTecni.tec_nom_calle=rs.getString(9); 
+							miTecni.tec_nro_dir=rs.getString(10);
+							miTecni.tec_piso_dir=rs.getString(11);
+							miTecni.tec_depto_dir=rs.getString(12); 
+							miTecni.tec_cod_entre=rs.getString(13); 
+							miTecni.tec_entre_calle1=rs.getString(14); 
+							miTecni.tec_cod_ycalle=rs.getString(15);
+							miTecni.tec_entre_calle2=rs.getString(16);
+							miTecni.tec_manzana=rs.getString(17);
+							miTecni.tec_centro_trans=rs.getString(18);
+							miTecni.tec_alimentador=rs.getString(19);
+							miTecni.tec_subestacion=rs.getString(20); 
+							miTecni.tec_nom_subest=rs.getString(21);
+						}
+					}
+				}
+			}
+		}else {
+			try(Connection connection = UConnection.getConnection()){
+				try(PreparedStatement stmt = connection.prepareStatement(SEL_T3_CADENA)){
+					stmt.setLong(1, lNroCliente);
+					try(ResultSet rs = stmt.executeQuery()){
+						if(rs.next()) {
+							miTecni.tec_cod_suc=rs.getString(1); 
+							miTecni.tec_sucursal=rs.getString(2);
+							miTecni.tec_cod_part=rs.getString(3); 
+							miTecni.tec_partido=rs.getString(4);
+							miTecni.tec_cod_local=rs.getString(5);
+							miTecni.tec_localidad=rs.getString(6); 
+							miTecni.tec_cod_calle=rs.getString(7); 
+							miTecni.tec_nom_calle=rs.getString(8); 
+							miTecni.tec_nro_dir=rs.getString(9);
+							miTecni.tec_piso_dir=rs.getString(10);
+							miTecni.tec_depto_dir=rs.getString(11); 
+							miTecni.tec_cod_entre=rs.getString(12); 
+							miTecni.tec_entre_calle1=rs.getString(13); 
+							miTecni.tec_cod_ycalle=rs.getString(14);
+							miTecni.tec_entre_calle2=rs.getString(15);
+							miTecni.tec_manzana=rs.getString(16);
+							miTecni.tec_centro_trans=rs.getString(17);
+							miTecni.tec_alimentador=rs.getString(18);
+							miTecni.tec_subestacion=rs.getString(19); 
+							miTecni.tec_nom_subest=rs.getString(20);
+						}
+					}
+				}
+			}
+			
+		}
+		return miTecni;
+	}
+
 	
 	private static final String SEL_FERIADOS = "SELECT fecha FROM feriados "+
 			"WHERE fecha >= TODAY "+
@@ -851,7 +1014,7 @@ public class calcomDAO {
 			"rt_fecha_excepcon "+
 			")VALUES( "+
 			"?, ?, ?, CURRENT, ?, ?, "+
-			"'N', 'N', 'N', 'N', "+
+			"'N', 'S', 'N', 'N', "+ //El segundo campo 'S' es xq se envia el mensaje en el mismo acto
 			"?, 'N', 'N', 'N') ";
 
 	private static final String INS_RECLAMO_INTERV = "INSERT INTO contacto:ce_reclamo_interv "+
@@ -863,5 +1026,87 @@ public class calcomDAO {
 			"?, ?, ?, CURRENT) ";
 	
 
+	private static final String SEL_NRO_MENSAJE = "{call xpro_crear(1, 'CALCOM')}";
+	
+	private static final String SEL_DESCRI_TABLA = "SELECT TRIM(descripcion) FROM synergia:tabla "+
+			"WHERE nomtabla = ? "+
+			"AND codigo = ? "+
+			"AND sucursal = '0000' "+
+			"AND fecha_activacion <= TODAY "+
+			"AND (fecha_desactivac > TODAY OR fecha_desactivac IS NULL) ";
+	
+
+	private static final String SEL_RECLA_TECNI_PROCE = "SELECT car_proc_pendiente, plazo, cod_agrupacion "+
+			", plazo_adic1, plazo_adic2 "+
+			"FROM synergia:recla_tecni_proce "+
+			"WHERE motivo_empresa= ? "+
+			"AND motivo_cliente= ? "+
+			"AND tema IS NULL "+
+			"AND trabajo IS NULL "+
+			"AND procedimiento = 'CALCOM' "+
+			"AND fecha_activacion <= TODAY "+   
+			"AND (fecha_desactivac IS NULL OR fecha_desactivac > TODAY) ";
+			
+	private static final String SEL_PROVEEDOR = "SELECT DISTINCT tp_proveedor , tp_area "+
+			"FROM contacto:ce_tab_proveed_int, outer contacto:ct_tab_suctrof "+
+			"WHERE tp_proveedor = ? "+
+			"AND (tp_fecha_baja IS NULL OR tp_fecha_baja > TODAY) "+
+			"AND su_cod_suctrof = tp_sucursal "+
+			"AND su_cate_suctrof = 'S' ";
+	
+	private static final String SEL_TECNI = "SELECT codigo_voltaje, "+ 
+			"tec_cod_suc, "+
+			"tec_sucursal, "+
+			"tec_cod_part, "+
+			"tec_partido, "+
+			"tec_cod_local, "+
+			"tec_localidad, "+
+			"tec_cod_calle, "+
+			"tec_nom_calle, "+
+			"tec_nro_dir, "+
+			"tec_piso_dir, "+
+			"tec_depto_dir, "+
+			"tec_cod_entre, "+
+			"tec_entre_calle1, "+ 
+			"tec_cod_ycalle, "+
+			"tec_entre_calle2, "+
+			"tec_manzana, "+
+			"tec_centro_trans, "+ 
+			"tec_alimentador, "+
+			"tec_subestacion, "+
+			"tec_nom_subest "+
+			"FROM SYNERGIA:tecni WHERE numero_cliente = ? ";
+	
+	private static final String SEL_T3_CADENA = "SELECT sucursal, "+
+			"nombre_sucursal, "+
+			"partido, "+
+			"nombre_partido, "+
+			"codigo_localidad, "+ 
+			"nombre_localidad, "+
+			"codigo_calle, "+
+			"nombre_calle, "+
+			"nro_dir, "+
+			"piso_dir, "+
+			"dpto_dir, "+
+			"codigo_entre1, "+
+			"nom_calle_entre1, "+
+			"codigo_entre2, "+
+			"nom_calle_entre2, "+
+			"manzana, "+
+			"salida_bt_ct, "+
+			"alim_red_normal, "+
+			"codigo_subestacion, "+
+			"nombre_subestacion "+
+			"FROM contacto:t3_cad_electrica "+
+			"WHERE codigo_cuenta = ? ";
+
+	private static final String SEL_TIPO_DOCUMENTO = "SELECT  TRIM(valor_alf) "+
+			"FROM synergia:tabla "+
+			"WHERE nomtabla = 'TEMSVP' "+
+			"AND sucursal = '0000' "+
+			"AND codigo = ? "+
+			"AND fecha_activacion <=  TODAY "+
+			"AND (fecha_desactivac > TODAY OR fecha_desactivac IS NULL ) ";
+	
 			
 }

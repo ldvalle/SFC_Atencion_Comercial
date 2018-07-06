@@ -64,6 +64,7 @@ public class clienteDTO {
 	public String	estado_cliente;
 	public String	estado_facturacion;
 	public String	estado_cobrabilida;
+	public String	desc_estCobrabilidad; //-- Agregado por CALCOM
 	public String	estado_suministro;
 	public String	cod_propiedad;
 	public String	tiene_convenio;

@@ -9,5 +9,4 @@ public class paramLocalDTO {
 	public String	cambiaMarcas;
 	public boolean	cambiaCobrabilida;
 	public boolean  cambiaCorte;
- 
 }

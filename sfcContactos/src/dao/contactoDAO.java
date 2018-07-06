@@ -325,7 +325,7 @@ public class contactoDAO {
 			pstm=null;
 
 			//********** AREA SEGEN ********
-System.out.println("punto 1");			
+			
 			pstm = con.prepareStatement(GET_INI_CONTACTO);
 			pstm.setLong(1, regConta.co_numero);
 			pstm.setString(2, regConta.co_suc_contacto);
@@ -337,7 +337,7 @@ System.out.println("punto 1");
 				System.out.println("No se recuperó el Contacto");
 				return false;
 			}
-System.out.println("punto 2");
+
 			//Obtener Tema/Trabajo
 			miTema=getTemaTrabajo(regMot.mo_cod_motivo.trim(), regMot.mo_cod_mot_empresa.trim());
 			
@@ -345,7 +345,7 @@ System.out.println("punto 2");
 				System.out.println("No se encontró Tema/Trabajo para motivo Cliente " + regMot.mo_cod_motivo + " motivo Empresa " + regMot.mo_cod_mot_empresa );
 				return false;
 			}
-System.out.println("punto 3");			
+			
 			//Obtener Nro.Mensaje
 			lNroMensaje = getNroMensaje();
 
@@ -353,11 +353,11 @@ System.out.println("punto 3");
 				System.out.println("No se recuperó Nro.de Mensaje");
 				return false;
 			}
-System.out.println("punto 4. Mensaje " + lNroMensaje);			
+			
 			//Obtener Destino
 			sRolOrigen = "E17317";
 			sDireDestino = getDestino(regConta, regMot, miTema);
-System.out.println("DataDestino " + sDireDestino);			
+			
 			String partes[] = sDireDestino.split(Pattern.quote("|"));
 			sRolDestino = partes[0];
 			sAreaDestino = partes[1];
@@ -366,14 +366,12 @@ System.out.println("DataDestino " + sDireDestino);
 			if(partes.length == 4) {
 				sCodAgrupa=partes[3];
 			}
-System.out.println("punto 5");
+
 			//Armar Mensaje
 			mensajeDTO regMen = new mensajeDTO(lNroMensaje, fechaInicio, sRolOrigen, sRolDestino, sAreaDestino, "M_SEGEN", miCliente, regConta, regMot, miTema, regPar, vecObserva);
 			//mensajeDTO regMen = new mensajeDTO(lNroMensaje, regConta.co_numero, regConta.co_numero_cliente, Integer.parseInt(regMot.mo_cod_motivo), Integer.parseInt(regMot.mo_cod_mot_empresa), sFecha, sRolOrigen, sRolDestino, sAreaDestino, "M_SEGEN");
 
 			//Enviar Mensaje
-sql = query14(regMen);
-System.out.println("[" + sql + "]");			
 			//pstm = con.prepareStatement(sql);
 			pstm = con.prepareStatement(XPRO_ENVIAR);
 			pstm.setLong(1, regMen.lMensaje);
@@ -394,13 +392,13 @@ System.out.println("[" + sql + "]");
 			
 			pstm.execute();
 			pstm=null;
-System.out.println("punto 6");			
+			
 			//Obtiene nro.de Orden
 			sNroOrden = getNroOrden();
 			
 			//Prepara Orden
 			ordenDTO regOrden = new ordenDTO(regConta, regMot, miTema, lNroMensaje, sNroOrden, sRolOrigen, sRolDestino, sAreaDestino, regInt.caso, regInt.nro_orden, miCliente);
-System.out.println("punto 7. Orden Nro." + sNroOrden);			
+			
 			//Graba Orden
 			pstm = con.prepareStatement(SET_ORDEN);
 			pstm.setString(1, regOrden.numero_orden.trim());
@@ -409,21 +407,21 @@ System.out.println("punto 7. Orden Nro." + sNroOrden);
 			pstm.setString(4, regOrden.area_emisora.trim());
 			pstm.setString(5, regOrden.area_ejecutora.trim());
 			pstm.setString(6, regOrden.rol_usuario.trim());
-System.out.println("Tema Trabajo [" + regOrden.tema + "/" + regOrden.trabajo + "] ["+ miTema.sCodTema + "/" + miTema.sCodTrabajo + "]" );
+
 
 			pstm.setString(7, regOrden.tema.trim());
 			pstm.setString(8, regOrden.trabajo.trim());
 			pstm.setLong(9, regOrden.numero_cliente);
-System.out.println("antes de la fecha "+ regOrden.vencimiento);
+
 			pstm.setString(10,  regOrden.vencimiento);
-System.out.println("Despues de la fecha");			
+			
 			pstm.setString(11, regOrden.cuenta_conver.trim());
 			pstm.setString(12, regOrden.sucu_usu.trim());
 			pstm.setLong(13, regOrden.lCaso);
 			pstm.setLong(14, regOrden.lNroOrden);
 			
 			pstm.executeUpdate();
-System.out.println("punto 8");			
+			
 			pstm=null;
 			
 			//Graba Etapa Orden
@@ -431,7 +429,7 @@ System.out.println("punto 8");
 			pstm.setLong(1, regOrden.mensaje_xnear);
 
 			pstm.executeUpdate();
-System.out.println("punto 9");			
+			
 			pstm=null;
 			
 			//grabar cto_segen
@@ -458,7 +456,7 @@ System.out.println("punto 9");
 			
 			pstm=null;
 			
-System.out.println("punto 10");			
+			
 			//si la carpeta es de Recla Tecni Proce
 			if(partes.length == 4) {
 				// Ver si hay reiteracion
@@ -478,7 +476,7 @@ System.out.println("punto 10");
 				
 				pstm=null;
 				rs=null;
-System.out.println("punto 11");
+
 				// Preparar rec_rec_uni
 				recRecUniDTO miRecUni = new recRecUniDTO(lNroMensaje, sReincidencia, sCodAgrupa, regConta, regMot, miCliente, regPar, regTecni, miTema);
 				
@@ -529,7 +527,7 @@ System.out.println("punto 11");
 				pstm.setTimestamp(40, tFechaInicio);
 				
 				pstm.executeUpdate();
-System.out.println("punto 12");				
+				
 				pstm=null;
 				
 			}
@@ -540,7 +538,7 @@ System.out.println("punto 12");
 			pstm.setLong(1, regInt.caso);
 			pstm.setLong(2, regInt.nro_orden);
 			pstm.executeUpdate();
-System.out.println("punto 13");	
+	
 
 			con.commit();
 			
@@ -1331,7 +1329,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"vencimiento, cuenta_conver, sucu_usu, "+
 			"sfc_caso, sfc_nro_orden, fecha_inicio "+
 			")VALUES('AC', ?, ?, 1, ?, ?, "+
-			"'RQ', 'SALEFORCE', ?, 'N', '0', "+
+			"'RQ', 'SALESFORCE', ?, 'N', '0', "+
 			"?, ?, ?, '0005', 0, 0, ?, ?, ?, ?, "+
 			"?, ?, CURRENT) ";
 	

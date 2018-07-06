@@ -10,6 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 public class procCalcomesSRV {
 	private Collection<Date>lstFeriados=null;
@@ -70,6 +71,7 @@ public class procCalcomesSRV {
 		paramLocalDTO regParLocal = null; 
 		try {
 			if(PasaValida(regData)) {
+				//***** Etapa Reclamo *****
 				long lNroReclamo;
 				
 				//Cargar Parametros para el tema/motivo
@@ -83,6 +85,7 @@ public class procCalcomesSRV {
 				clienteDTO regCliente = null;
 				if(regData.tarifa.equals("T1")) {
 					regCliente = miDao.getDataClienteT1(regData.numero_cliente);
+					regCliente.desc_estCobrabilidad = miDao.getDesriTabla("ESTCOB", regCliente.estado_cobrabilida.trim());
 				}else{
 					regCliente = miDao.getDataClienteT2(regData.numero_cliente);
 				}
@@ -102,15 +105,48 @@ public class procCalcomesSRV {
 
 				//Obtener Analista Edesur
 				sRolAnalista = miDao.getAnalista(regData.sucursal);
-				postalLinkDTO delivery = new postalLinkDTO("EVDI", "SIC0","","",sRolAnalista);
-				
+							
 				
 				//Cargar CE_RECLAMO
 				ceReclamoDTO reclamo = new ceReclamoDTO(lNroReclamo, sRolAnalista, dFechaHoy, regData, regParLocal, regCliente, lstFeriados);
+				if(regParLocal.esTemaSVP) {
+					reclamo.setTipoDocumento(miDao.getTipoDocumento(reclamo.getCodTema()));	
+				}else {
+					reclamo.setTipoDocumento("CALCOM");
+				}
+				reclamo.setDescriTema(miDao.getDesriTabla("TEMAS", Integer.toString(reclamo.getCodTema())));
+				
 				
 				//Cargar CE_CLIENTE_RECLAMO
 				ceClienteReclamoDTO clienteReclamo = new ceClienteReclamoDTO(reclamo, regCliente);
 				
+				//********************************
+				//***** Seccion Mensaje/Orden ****
+				//********************************
+				
+				long lNroMensaje = miDao.getNroMensaje();
+				
+				//Carga carpeta para mensaje
+				reclaTecniProce recla = null;
+				recla = miDao.getReclaTecniProce(reclamo.getCodMotivo(), reclamo.getCodTema());
+	
+				//Busca Proveedor
+				String sProveedor = miDao.getProveedor(recla.getCarProcPendiente());
+				String partes[] = sProveedor.split(Pattern.quote("|"));
+				String sCodProveedor = partes[0];
+				String sAreaProveedor = partes[1];
+				postalLinkDTO delivery = new postalLinkDTO("EVDI", "SIC0","","",sRolAnalista, sCodProveedor, sAreaProveedor);
+
+				//Arma Mensaje
+				ceMensajeDTO mensaCalcom = new ceMensajeDTO(lNroMensaje, dFechaHoy, delivery.getRolOrigen(), recla.getCarProcPendiente(), "CALCOM", regCliente, reclamo);
+				
+				//Busca Nro de Orden
+				String sNroOrden = miDao.getNroNumao("CAL", delivery.getAreaOrigen());
+				
+				//Carga Datos Tecnicos
+				tecniDTO tecni = miDao.getTecni(reclamo.getCodCliente(), reclamo.getTarifa());
+				
+				//Lanzar todo !!!
 				if(!miDao.regiCalcom(lNroReclamo,regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo )) {
 					System.out.println(String.format("No se pudo registrar el calcom %d para tema %d.", regInter.caso, regData.tema));
 				}
