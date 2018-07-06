@@ -550,10 +550,14 @@ public class calcomDAO {
 			stmt.setString(6, reclamo.getCodEjecEdes());
 			stmt.setString(7, reclamo.getEjeCedesIni());
 			stmt.setString(8, reclamo.getNDocumEnre());
-			stmt.setTimestamp(9, new Timestamp(reclamo.getFechaVto().getTime()));
-			stmt.setLong(10, reclamo.getCodCliente());	
-			stmt.setString(11, reclamo.getTarifa());
-			stmt.setString(12, reclamo.getSucursal());
+			stmt.setTimestamp(9, new Timestamp(reclamo.getFechaReclamo().getTime()));
+			stmt.setTimestamp(10, new Timestamp(reclamo.getFechaSalEnre().getTime()));
+			stmt.setTimestamp(11, new Timestamp(reclamo.getFechaIgEdes().getTime()));
+			stmt.setTimestamp(12, new Timestamp(reclamo.getFechaIgSist().getTime()));
+			stmt.setTimestamp(13, new Timestamp(reclamo.getFechaVto().getTime()));
+			stmt.setLong(14, reclamo.getCodCliente());	
+			stmt.setString(15, reclamo.getTarifa());
+			stmt.setString(16, reclamo.getSucursal());
 
 			stmt.executeUpdate();
 		}
@@ -903,8 +907,8 @@ public class calcomDAO {
 			"re_sucursal "+
 			")VALUES( "+
 			"?,?,?,?,?,?, "+
-			"?,?,CURRENT,CURRENT, "+
-			"CURRENT,CURRENT, "+
+			"?,?,?,?, "+
+			"?,?, "+
 			"?,'N','N',?, "+
 			"?,?) ";
 		

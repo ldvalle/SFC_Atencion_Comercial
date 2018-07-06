@@ -108,7 +108,7 @@ public class procCalcomesSRV {
 							
 				
 				//Cargar CE_RECLAMO
-				ceReclamoDTO reclamo = new ceReclamoDTO(lNroReclamo, sRolAnalista, dFechaHoy, regData, regParLocal, regCliente, lstFeriados);
+				ceReclamoDTO reclamo = new ceReclamoDTO(lNroReclamo, dFechaHoy, sRolAnalista, dFechaHoy, regData, regParLocal, regCliente, lstFeriados);
 				if(regParLocal.esTemaSVP) {
 					reclamo.setTipoDocumento(miDao.getTipoDocumento(reclamo.getCodTema()));	
 				}else {
@@ -145,6 +145,7 @@ public class procCalcomesSRV {
 				
 				//Carga Datos Tecnicos
 				tecniDTO tecni = miDao.getTecni(reclamo.getCodCliente(), reclamo.getTarifa());
+				
 				
 				//Lanzar todo !!!
 				if(!miDao.regiCalcom(lNroReclamo,regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo )) {

@@ -15,6 +15,12 @@ public class ceReclamoDTO {
 	private String	re_cod_ejec_edes;
 	private String	re_ejecedes_ini;
 	private String	re_ndocum_enre;
+
+	private Date	re_fecha_reclamo;
+	private Date	re_fecha_sal_enre;
+	private Date	re_fecha_ig_edes;
+	private Date	re_fecha_ig_sist;
+	
 	private Date	re_fecha_vto;
 	private long	re_cod_cliente;
 	private String	re_tarifa;
@@ -24,7 +30,7 @@ public class ceReclamoDTO {
 
 	private Collection<Date> lstFeriados;
 	
-	public ceReclamoDTO(long lNroReclamo, String rolAnalista, Date fechaHoy, dataInDTO regData, paramLocalDTO parLoc, clienteDTO regClie, Collection<Date> lstFeriados) {
+	public ceReclamoDTO(long lNroReclamo, Date dFechaHoy, String rolAnalista, Date fechaHoy, dataInDTO regData, paramLocalDTO parLoc, clienteDTO regClie, Collection<Date> lstFeriados) {
 
 		this.re_reclamo=lNroReclamo;
 		this.re_cod_tema = regData.tema;
@@ -40,6 +46,13 @@ public class ceReclamoDTO {
 		this.re_sucursal=regClie.sucursal.trim();
 		
 		this.lstFeriados=lstFeriados;
+
+		this.re_fecha_reclamo=dFechaHoy;
+		this.re_fecha_sal_enre=dFechaHoy;
+		this.re_fecha_ig_edes=dFechaHoy;
+		this.re_fecha_ig_sist=dFechaHoy;
+		
+		
 		this.re_fecha_vto = calculaVenc(fechaHoy, parLoc.plazo, parLoc.esTemaSVP);
 	}
 	
@@ -140,6 +153,35 @@ public class ceReclamoDTO {
 	public void setDescriTema(String sDescriTema) {
 		this.sDescriTema = sDescriTema;
 	}
+	
+	public Date getFechaReclamo() {
+		return re_fecha_reclamo;
+	}
+	public void setFechaReclamo(Date re_fecha_reclamo) {
+		this.re_fecha_reclamo = re_fecha_reclamo;
+	}
+
+	public Date getFechaSalEnre() {
+		return re_fecha_sal_enre;
+	}
+	public void setFechaSalEnre(Date re_fecha_sal_enre) {
+		this.re_fecha_sal_enre = re_fecha_sal_enre;
+	}
+	
+	public Date getFechaIgEdes() {
+		return re_fecha_ig_edes;
+	}
+	public void setFechaIgEdes(Date re_fecha_ig_edes) {
+		this.re_fecha_ig_edes = re_fecha_ig_edes;
+	}
+
+	public Date getFechaIgSist() {
+		return re_fecha_ig_sist;
+	}
+	public void setFechaIgSist(Date re_fecha_ig_sist) {
+		this.re_fecha_ig_sist = re_fecha_ig_sist;
+	}
+
 	
 	private Date calculaVenc(Date d, int iPlazo, boolean diasCorridos) {
 		Date miFecha = null;
