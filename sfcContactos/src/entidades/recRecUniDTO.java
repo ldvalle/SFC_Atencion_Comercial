@@ -1,5 +1,6 @@
 package entidades;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -15,11 +16,11 @@ public class recRecUniDTO {
 	public String	trabajo_requerido;
 	public String	motivo_empresa;
 	public String	motivo_cliente;
-	public String	fecha_ini_contacto; //DateTime
+	public Date	fecha_ini_contacto; //DateTime
 	public int		plazo;
-	public String	fecha_vto_con;		//DateTime
-	public String	fecha_ingreso_ct;	//DateTime
-	public String	fecha_vto_ct ;		//DateTime
+	public Date	fecha_vto_con;		//DateTime
+	public Date	fecha_ingreso_ct;	//DateTime
+	public Date	fecha_vto_ct ;		//DateTime
 	public String	nombre_cliente;
 	public String	telefono;
 	public String	cod_calle;
@@ -54,9 +55,15 @@ public class recRecUniDTO {
 	public String	mot_pot_futura;
 	public Double	potencia_hp_solic;
 	public String	nivel_tension_sol;
-	public String	fecha_ini_edesur;	//DateTime
-	public String	fecha_excepcion;	//DateTime
+	public Date	fecha_ini_edesur;	//DateTime
+	public Date	fecha_excepcion;	//DateTime
+	public Date fecha_vto_real_con;
+	public String nro_expediente;
+	public String sucursal_comercial;
+	public String derivado;
+	public Date	fecha_reclamo;
 	
+	//Para Segenes
 	public recRecUniDTO(Long lNroMensaje, String sReincidencia, String sCodAgrupa, contactoDTO regConta, motContactoDTO regMot, clienteDTO miCliente, parametrosDTO regPar, tecniDTO regTecni, temaTrabajo miTema) {
 		String sTipoReclamo="";
 		SimpleDateFormat formater= new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
@@ -64,14 +71,14 @@ public class recRecUniDTO {
 		String sFechaVtoCT="";
 
 		sFechaVtoCT= formater.format(regPar.dFchaVtoCt);
-		/*
+		
 		try {
 			dFechaInicio= formater.parse(regConta.co_fecha_inicio);
 			sFechaVtoCT= formater.format(regPar.dFchaVtoCt);
 		}catch (ParseException e) {
             e.printStackTrace();
         }
-		*/
+		
 		switch(regPar.sTipoContacto) {
 			case "0":
 				sTipoReclamo="Consulta";
@@ -101,9 +108,9 @@ public class recRecUniDTO {
 		this.trabajo_requerido = miTema.sDescTema.trim() + "-" + miTema.sDescTrabajo.trim();
 		this.motivo_cliente = regMot.mo_cod_motivo;
 		this.motivo_empresa=regMot.mo_cod_mot_empresa;
-		this.fecha_ini_contacto=regConta.co_fecha_inicio;
+		this.fecha_ini_contacto= dFechaInicio; //regConta.co_fecha_inicio;
 		this.plazo = regPar.iPlazo;
-		this.fecha_vto_con = regMot.mo_fecha_vto;
+		this.fecha_vto_con = regPar.dFechaVto; // regMot.mo_fecha_vto;
 		/*
 		try {
 			this.fecha_vto_con= formater.parse(regMot.mo_fecha_vto);
@@ -111,7 +118,7 @@ public class recRecUniDTO {
             e.printStackTrace();
         }
         */
-		this.fecha_vto_ct = sFechaVtoCT;
+		this.fecha_vto_ct = regPar.dFchaVtoCt; // sFechaVtoCT;
 		
 		this.nombre_cliente = miCliente.nombre.trim();
 		this.telefono = miCliente.telefono.trim();
@@ -214,7 +221,133 @@ public class recRecUniDTO {
 		}else {
 			this.tipo_sum="2";
 		}
-		this.fecha_ini_edesur=regConta.co_fecha_inicio;
+		this.fecha_ini_edesur= dFechaInicio;   //regConta.co_fecha_inicio;
 		
+	}
+	
+	//Para Calcom
+	public recRecUniDTO(long lNroMensaje, ceReclamoDTO reclamo, reclaTecniProce recla, paramLocalDTO parLocal, tecniDTO regTecni, clienteDTO miCliente) {
+		this.numero_cliente = reclamo.getCodCliente();
+		this.etapa="Reclamo";
+		this.tarifa=reclamo.getTarifa();
+		this.origen ="MAC";
+		this.tipo_documento=reclamo.getTipoDocumento();
+		this.nro_reclamo = reclamo.getReclamo();
+		this.nro_mensaje=lNroMensaje;
+		this.tipo_reclamo="E";
+		this.motivo_empresa= Integer.toString(reclamo.getCodMotivo());
+		this.motivo_cliente = Integer.toString( reclamo.getCodTema());
+		this.fecha_ini_contacto = reclamo.getFechaIgEdes();
+		this.plazo = parLocal.plazo;
+		this.fecha_vto_con = reclamo.getFechaVto();
+		this.fecha_ingreso_ct = reclamo.getFechaIgEdes();
+		this.fecha_vto_ct = reclamo.getFechaVto();
+		this.nombre_cliente = miCliente.nombre;
+		this.telefono = miCliente.telefono;
+		
+		if(regTecni != null) {
+			if(regTecni.tec_cod_calle != null)
+				this.cod_calle = regTecni.tec_cod_calle.trim();
+			if(regTecni.tec_nom_calle != null)
+				this.calle=regTecni.tec_nom_calle.trim();
+			if(regTecni.tec_piso_dir != null)
+				this.piso=regTecni.tec_piso_dir.trim();
+			if(regTecni.tec_depto_dir != null)
+				this.dpto=regTecni.tec_depto_dir.trim();
+			if(regTecni.tec_nro_dir != null)
+				this.nro_puerta=regTecni.tec_nro_dir.trim();
+			if(regTecni.tec_cod_entre != null)
+				this.cod_entre_calle=regTecni.tec_cod_entre.trim();
+			if(regTecni.tec_entre_calle1 != null)
+				this.entre_calle=regTecni.tec_entre_calle1.trim();
+			if(regTecni.tec_cod_ycalle != null)
+				this.cod_entre_calle2=regTecni.tec_cod_ycalle.trim();
+			if(regTecni.tec_entre_calle2 != null)
+				this.entre_calle2=regTecni.tec_entre_calle2.trim();
+			if(regTecni.tec_manzana != null)
+				this.nro_manzana=regTecni.tec_manzana.trim();
+			if(regTecni.tec_cod_local != null)
+				this.cod_localidad=regTecni.tec_cod_local.trim();
+			if(regTecni.tec_localidad != null)
+				this.localidad=regTecni.tec_localidad.trim();
+			if(regTecni.tec_cod_part != null)
+				this.cod_partido=regTecni.tec_cod_part.trim();
+			if(regTecni.tec_partido != null)
+				this.partido=regTecni.tec_partido.trim();
+			if(regTecni.tec_cod_suc != null)
+				this.sucursal_tecnica=regTecni.tec_cod_suc.trim();
+			if(regTecni.tec_sucursal != null)
+				this.nom_suc_tecnica=regTecni.tec_sucursal.trim();
+			if(regTecni.tec_subestacion != null)
+				this.cod_subestacion=regTecni.tec_subestacion.trim();
+			if(regTecni.tec_nom_subest != null)
+				this.nombre_subestacion=regTecni.tec_nom_subest.trim();
+			if(regTecni.tec_alimentador != null)
+				this.alimentador=regTecni.tec_alimentador.trim();
+			if(regTecni.tec_centro_trans != null)
+				this.centro_trans=regTecni.tec_centro_trans.trim();
+		}else {
+			if(miCliente.cod_calle != null)
+				this.cod_calle = miCliente.cod_calle.trim();
+			if(miCliente.nom_calle != null)
+				this.calle=miCliente.nom_calle.trim();
+			if(miCliente.piso_dir != null)
+				this.piso=miCliente.piso_dir.trim();
+			if(miCliente.depto_dir != null)
+				this.dpto=miCliente.depto_dir.trim();
+			if(miCliente.nro_dir != null)
+				this.nro_puerta=miCliente.nro_dir.trim();
+			if(miCliente.cod_entre != null)
+				this.cod_entre_calle=miCliente.cod_entre.trim();
+			if(miCliente.nom_entre != null)
+				this.entre_calle=miCliente.nom_entre.trim();
+			if(miCliente.cod_entre1 != null)
+				this.cod_entre_calle2=miCliente.cod_entre1.trim();
+			if(miCliente.nom_entre1 != null)
+				this.entre_calle2=miCliente.nom_entre1.trim();
+			
+			this.nro_manzana="";
+			if(miCliente.comuna != null)
+				this.cod_localidad=miCliente.comuna.trim();
+			if(miCliente.nom_comuna != null)
+				this.localidad=miCliente.nom_comuna.trim();
+			if(miCliente.partido != null)
+				this.cod_partido=miCliente.partido.trim();
+			if(miCliente.nom_partido != null)
+				this.partido=miCliente.nom_partido.trim();
+			if(miCliente.sucursal != null)
+				this.sucursal_tecnica=miCliente.sucursal.trim();
+			if(miCliente.nom_sucursal != null)
+				this.nom_suc_tecnica=miCliente.nom_sucursal.trim();
+			
+			this.cod_subestacion="";
+			
+			this.nombre_subestacion="";
+			
+			this.alimentador="";
+			
+			this.centro_trans="";
+		}
+		
+		this.trabajo_requerido = reclamo.getDescriTema();
+		this.cod_agrupacion = recla.getCodAgrupacion();
+		this.plazo_tecnico = parLocal.plazo;
+		this.fecha_vto_real_con = reclamo.getFechaVto();
+		this.nro_expediente = reclamo.getNDocumEnre();
+		this.sucursal_comercial = miCliente.sucursal;
+		
+		if(regTecni == null) {
+			this.sin_tecni="S";
+		}else {
+			this.sin_tecni="N";
+		}
+		
+		this.fecha_ini_edesur = reclamo.getFechaIgEdes();
+		
+		if(reclamo.getTipoDocumento().equals("CALCOMSVP")) {
+			this.derivado = "operaciones";
+		}
+		
+		this.fecha_reclamo = reclamo.getFechaIgEdes();
 	}
 }

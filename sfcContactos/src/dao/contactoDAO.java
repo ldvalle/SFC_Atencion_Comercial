@@ -494,8 +494,10 @@ public class contactoDAO {
 				pstm.setTimestamp(8, tFechaInicio);
 				pstm.setInt(9, miRecUni.plazo);
 				//java.sql.Timestamp tFechaVtoCon = (java.sql.Timestamp)miRecUni.fecha_vto_con;
-				pstm.setString(10, miRecUni.fecha_vto_con);
-				pstm.setString(11, miRecUni.fecha_vto_ct);
+		
+				pstm.setTimestamp(10, new Timestamp(miRecUni.fecha_vto_con.getTime()));
+				pstm.setTimestamp(11, new Timestamp(miRecUni.fecha_vto_ct.getTime()));
+				
 				pstm.setString(12, miRecUni.nombre_cliente);
 				pstm.setString(13, miRecUni.telefono);
 				pstm.setString(14, miRecUni.cod_calle);

@@ -146,6 +146,8 @@ public class procCalcomesSRV {
 				//Carga Datos Tecnicos
 				tecniDTO tecni = miDao.getTecni(reclamo.getCodCliente(), reclamo.getTarifa());
 				
+				//Armo RecRecUni
+				recRecUniDTO recUni = new recRecUniDTO(lNroMensaje, reclamo, recla, regParLocal, tecni, regCliente);
 				
 				//Lanzar todo !!!
 				if(!miDao.regiCalcom(lNroReclamo,regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo )) {
