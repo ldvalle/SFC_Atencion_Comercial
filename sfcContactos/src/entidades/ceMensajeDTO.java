@@ -123,4 +123,49 @@ public class ceMensajeDTO {
 	}
 	
 	private static final String CH_FL = "" + (char)13 + (char)10;
+	
+	//Getters
+	public long getNroMensaje() {
+		return lMensaje;
+	}
+	public String getProcedimiento() {
+		return sProced;
+	}
+	public String getEtapa() {
+		return sEtapa;
+	}
+	public String getPrivacidad() {
+		return sPrivacidad;
+	}
+	public String getUrgencia() {
+		return sUrgencia;
+	}
+	public String getEncriptado() {
+		return sEncriptado;
+	}
+	public String getReferencia() {
+		return sReferencia;
+	}
+	public String getRolCon() {
+		return sRolCon;
+	}
+	public String getRolOrg() {
+		return sRolOrg;
+	}
+	public String getRolDst() {
+		return sRolDst;
+	}
+	public int getEmpCon() {
+		return iEmpCon;
+	}
+	public int getEmpOrg() {
+		return iEmpOrg;
+	}
+	public int getEmpDst() {
+		return iEmpDst;
+	}
+	public String getTexto() {
+		return sTexto;
+	}
+	
 }

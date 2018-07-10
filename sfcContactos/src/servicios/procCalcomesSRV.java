@@ -150,7 +150,7 @@ public class procCalcomesSRV {
 				recRecUniDTO recUni = new recRecUniDTO(lNroMensaje, reclamo, recla, regParLocal, tecni, regCliente);
 				
 				//Lanzar todo !!!
-				if(!miDao.regiCalcom(lNroReclamo,regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo )) {
+				if(!miDao.regiCalcom(lNroReclamo, lNroMensaje, sNroOrden, regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo, recla, recUni, mensaCalcom )) {
 					System.out.println(String.format("No se pudo registrar el calcom %d para tema %d.", regInter.caso, regData.tema));
 				}
 				

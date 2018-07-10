@@ -349,7 +349,7 @@ public class calcomDAO {
 		return sNroModif;
 	}
 	
-	public boolean regiCalcom(long lNroReclamo,dataInDTO regData, ceParametrosDTO ParGlobal, paramLocalDTO ParLocal, clienteDTO cliente, postalLinkDTO delivery, ceReclamoDTO reclamo, ceClienteReclamoDTO clienteReclamo ) throws SQLException {
+	public boolean regiCalcom(long lNroReclamo, long lNroMensaje, String sNroOrden, dataInDTO regData, ceParametrosDTO ParGlobal, paramLocalDTO ParLocal, clienteDTO cliente, postalLinkDTO delivery, ceReclamoDTO reclamo, ceClienteReclamoDTO clienteReclamo, reclaTecniProce recla, recRecUniDTO recUni, ceMensajeDTO mensaje ) throws SQLException {
 		String sNroModif="";
 		
 		if(ParLocal.cambiaMarcas.equals("S")) {
@@ -426,6 +426,30 @@ public class calcomDAO {
 
 			//******** Registro el Mensaje y la Orden ***********
 			
+			if(!setMensaCabec(connection, lNroMensaje, reclamo, delivery)) {
+				System.out.println("Falló insert de CE_MENSA_CABEC.");
+				return false;
+			}
+			
+			if(!setMensaItem(connection, lNroMensaje, reclamo, delivery)) {
+				System.out.println("Falló insert de CE_MENSA_ITEM.");
+				return false;
+			}
+			
+			if(!setOrden(connection, sNroOrden, lNroMensaje, reclamo, delivery, recla)) {
+				System.out.println("Falló insert de ORDEN.");
+				return false;
+			}
+			
+			if(!setEtapaOrden(connection, lNroMensaje, reclamo)) {
+				System.out.println("Falló insert de ETAPA_ORDEN.");
+				return false;
+			}
+			
+			if(!sendMensaje(connection, mensaje)) {
+				System.out.println("Falló insert de Enviar Mensaje.");
+				return false;
+			}
 			
 			connection.commit();
 		}
@@ -773,6 +797,154 @@ public class calcomDAO {
 		return miTecni;
 	}
 
+
+	private boolean setMensaCabec(Connection connection, long lNroMensaje, ceReclamoDTO reclamo, postalLinkDTO delivery) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(INS_MENSA_CABEC)){
+
+			stmt.setLong(1, lNroMensaje);
+			stmt.setLong(2, reclamo.getReclamo());
+			stmt.setInt(3, reclamo.getCodDocumEnt());
+			stmt.setString(4, delivery.getRolOrigen());
+			stmt.setString(5, delivery.getCodProveedor());
+			stmt.setTimestamp(6, new Timestamp(reclamo.getFechaVto().getTime()));
+			stmt.setTimestamp(7, new Timestamp(reclamo.getFechaIgEdes().getTime()));
+
+			stmt.executeUpdate();
+		}
+		return true;
+	}
+	
+
+	private boolean setMensaItem(Connection connection, long lNroMensaje, ceReclamoDTO reclamo, postalLinkDTO delivery) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(INS_MENSA_ITEM)){
+
+			stmt.setLong(1, lNroMensaje);
+			stmt.setString(2, delivery.getCodProveedor());
+			stmt.setString(3, delivery.getCodProveedor());
+			stmt.setTimestamp(4, new Timestamp(reclamo.getFechaIgEdes().getTime()));
+			stmt.setString(5, delivery.getAreaProveedor());
+			stmt.setTimestamp(6, new Timestamp(reclamo.getFechaVto().getTime()));
+			stmt.setString(7, delivery.getRolOrigen());
+			stmt.setString(8, delivery.getAreaOrigen());
+			
+			stmt.executeUpdate();
+		}
+		return true;
+	}
+
+	private boolean setOrden(Connection connection,String sNroOrden, long lNroMensaje, ceReclamoDTO reclamo, postalLinkDTO delivery, reclaTecniProce recla) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(INS_ORDEN)){
+
+			stmt.setString(1, sNroOrden);
+			stmt.setLong(2, lNroMensaje);
+			stmt.setString(3, delivery.getAreaOrigen());
+			stmt.setTimestamp(4, new Timestamp(reclamo.getFechaIgEdes().getTime()));
+			stmt.setString(5, recla.getCarProcPendiente());
+			stmt.setString(6, delivery.getRolOrigen());
+			stmt.setLong(7, reclamo.getCodCliente());
+			stmt.setTimestamp(8, new Timestamp(reclamo.getFechaVto().getTime()));
+			
+			stmt.executeUpdate();
+		}
+		return true;
+	}
+
+	private boolean setEtapaOrden(Connection connection,long lNroMensaje, ceReclamoDTO reclamo) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(INS_ETAPA_ORDEN)){
+			stmt.setLong(1, lNroMensaje);
+			stmt.setTimestamp(2, new Timestamp(reclamo.getFechaIgEdes().getTime()));
+			
+			stmt.executeUpdate();
+		}
+		return true;
+	}
+
+	private boolean setRecRecUni(Connection connection,recRecUniDTO recUni) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(INS_REC_REC_UNI)){
+
+			stmt.setLong(1, recUni.numero_cliente);
+			stmt.setString(2, recUni.etapa);
+			stmt.setString(3, recUni.tarifa);
+			stmt.setString(4, recUni.origen);
+			stmt.setString(5, recUni.tipo_documento); 
+			stmt.setLong(6, recUni.nro_reclamo); 
+			stmt.setLong(7, recUni.nro_mensaje); 
+			stmt.setString(8, recUni.tipo_reclamo); 
+			stmt.setString(9, recUni.motivo_empresa); 
+			stmt.setString(10, recUni.motivo_cliente);
+			stmt.setTimestamp(11, new Timestamp(recUni.fecha_ini_contacto.getTime()));
+			stmt.setInt(12, recUni.plazo);
+			stmt.setTimestamp(13, new Timestamp(recUni.fecha_vto_con.getTime())); 
+			stmt.setTimestamp(14, new Timestamp(recUni.fecha_ingreso_ct.getTime())); 
+			stmt.setTimestamp(15, new Timestamp(recUni.fecha_vto_ct.getTime()));
+			stmt.setString(16, recUni.nombre_cliente);
+			stmt.setString(17, recUni.telefono);
+			stmt.setString(18,  recUni.cod_calle); 
+			stmt.setString(19, recUni.calle); 
+			stmt.setString(20, recUni.piso); 
+			stmt.setString(21, recUni.dpto); 
+			stmt.setString(22, recUni.nro_puerta); 
+			stmt.setString(23, recUni.cod_entre_calle); 
+			stmt.setString(24, recUni.entre_calle); 
+			stmt.setString(25, recUni.cod_entre_calle2);
+			stmt.setString(26, recUni.entre_calle2);
+			stmt.setString(27, recUni.nro_manzana);
+			stmt.setString(28, recUni.cod_localidad); 
+			stmt.setString(29, recUni.localidad); 
+			stmt.setString(30, recUni.cod_partido);
+			stmt.setString(31, recUni.partido); 
+			stmt.setString(32, recUni.sucursal_tecnica); 
+			stmt.setString(33, recUni.nom_suc_tecnica); 
+			stmt.setString(34, recUni.cod_subestacion); 
+			stmt.setString(35, recUni.nombre_subestacion); 
+			stmt.setString(36, recUni.alimentador); 
+			stmt.setString(37, recUni.centro_trans);
+			stmt.setString(38, recUni.trabajo_requerido);			 
+			stmt.setString(39, recUni.cod_agrupacion); 
+			stmt.setString(40, recUni.reclamo_reincident); 
+			stmt.setInt(41, recUni.plazo_tecnico);
+			stmt.setTimestamp(42, new Timestamp(recUni.fecha_vto_real_con.getTime())); 
+			stmt.setString(43, recUni.nro_expediente);
+			stmt.setString(44, recUni.sucursal_comercial);
+			stmt.setString(45, recUni.sin_tecni);
+			stmt.setTimestamp(46, new Timestamp(recUni.fecha_ini_edesur.getTime()));
+			stmt.setString(47, recUni.derivado);
+			stmt.setTimestamp(48, new Timestamp(recUni.fecha_reclamo.getTime()));
+ 			
+			stmt.executeUpdate();
+		}
+		return true;
+	}
+	
+	private boolean sendMensaje(Connection connection,ceMensajeDTO regMen) throws SQLException{
+		
+		try(PreparedStatement stmt = connection.prepareStatement(XPRO_ENVIAR)){
+			stmt.setLong(1, regMen.getNroMensaje());
+			stmt.setString(2, regMen.getProcedimiento());
+			stmt.setString(3, regMen.getEtapa());
+			stmt.setString(4, regMen.getPrivacidad());
+			stmt.setString(5, regMen.getUrgencia());
+			stmt.setString(6, regMen.getEncriptado());
+			stmt.setString(7, regMen.getReferencia());
+			stmt.setString(8, regMen.getRolCon());
+			stmt.setString(9, regMen.getRolOrg());
+			stmt.setString(10, regMen.getRolDst());
+			stmt.setInt(11, regMen.getEmpCon());
+			stmt.setInt(12, regMen.getEmpOrg());
+			stmt.setInt(13, regMen.getEmpDst());
+			stmt.setString(14, regMen.getTexto());
+			
+			stmt.execute();
+		}
+		return true;
+	}
+
+	
 	
 	private static final String SEL_FERIADOS = "SELECT fecha FROM feriados "+
 			"WHERE fecha >= TODAY "+
@@ -1002,7 +1174,7 @@ public class calcomDAO {
 			"?, ?, ?, CURRENT, CURRENT, CURRENT, ?, 'N')";
 	
 	private static final String INS_RECLAMO_ETAPA = "INSERT INTO contacto:ce_reclamo_etapa "+  
-			"rt_reclamo, "+
+			"(rt_reclamo, "+
 			"rt_cod_docum_ent, "+
 			"rt_cod_docum_sal, "+
 			"rt_fecha_inicio, "+
@@ -1022,7 +1194,7 @@ public class calcomDAO {
 			"?, 'N', 'N', 'N') ";
 
 	private static final String INS_RECLAMO_INTERV = "INSERT INTO contacto:ce_reclamo_interv "+
-			"ri_reclamo, "+
+			"(ri_reclamo, "+
 			"ri_ejec_serv, "+
 			"ri_rol_intervi, "+
 			"ri_fecha_cambio "+
@@ -1112,5 +1284,117 @@ public class calcomDAO {
 			"AND fecha_activacion <=  TODAY "+
 			"AND (fecha_desactivac > TODAY OR fecha_desactivac IS NULL ) ";
 	
-			
+	private static final String INS_MENSA_CABEC = "INSERT INTO  contacto:ce_mensa_cabec( "+
+			"mc_nmensaje, "+
+			"mc_recexpe, "+
+			"mc_cod_docum_ent, "+
+			"mc_tipo_recexpe, "+
+			"mc_rolinicial, "+
+			"mc_proveedor, "+
+			"mc_fecha_venc, "+
+			"mc_fecha_inicio, "+
+			"mc_vencido "+
+			")VALUES( "+
+			"?, ?, ?, 'R', ?, ?, ?, ?, 'N') ";
+	
+	private static final String INS_MENSA_ITEM = "INSERT INTO contacto:ce_mensa_item( "+
+			"mi_nmensaje, "+
+			"mi_cod_proveedor, "+
+			"mi_carpeta, "+
+			"mi_fecha_mensaje, "+
+			"mi_area_prov, "+
+			"mi_fecha_venc, "+
+			"mi_origen, "+
+			"mi_area_origen "+
+			")VALUES ( "+
+			"?, ?, ?, ?, ?, ?, ?, ?) ";
+	
+	private static final String INS_ORDEN = "INSERT INTO synergia:orden "+
+			"(tipo_orden, "+
+			"numero_orden, "+
+			"mensaje_xnear, "+
+			"servidor, "+
+			"area_emisora, "+
+			"fecha_inicio, "+
+			"ident_etapa, "+
+			"term_dir, "+
+			"area_ejecutora, "+
+			"rol_usuario, "+
+			"numero_orden_rel, "+
+			"valor_cobro, "+
+			"numero_cliente, "+
+			"vencimiento, "+
+			"cuenta_conver "+
+			")VALUES( " +
+			"'CAL', ?, ?, 1, "+
+			"?, ?, 'RQ', 'SALESFORCE', ?, "+
+			"?, 0, 0, ?, ?, "+
+			"'0000000000000000') ";
+	
+	private static final String INS_ETAPA_ORDEN = "INSERT INTO synergia:etapa_orden "+
+			"(mensaje_xnear, "+
+			"ident_etapa, "+
+			"fecha_etapa "+
+			")VALUES( "+
+			"?, 'RQ' , ?) ";
+	
+	private static final String INS_REC_REC_UNI = "INSERT INTO synergia:rec_rec_uni ( "+
+			"numero_cliente, "+
+			"etapa, "+
+			"tarifa, "+
+			"origen, "+
+			"tipo_documento, "+
+			"nro_reclamo, "+
+			"nro_mensaje, "+
+			"tipo_reclamo, "+
+			"motivo_empresa, "+
+			"motivo_cliente, "+
+			"fecha_ini_contacto, "+
+			"plazo, "+
+			"fecha_vto_con, "+
+			"fecha_ingreso_ct, "+
+			"fecha_vto_ct, "+
+			"nombre_cliente, "+
+			"telefono, "+
+			"cod_calle, "+
+			"calle, "+
+			"piso, "+
+			"dpto, "+
+			"nro_puerta, "+
+			"cod_entre_calle, "+
+			"entre_calle, "+
+			"cod_entre_calle2, "+
+			"entre_calle2, "+
+			"nro_manzana, "+
+			"cod_localidad, "+
+			"localidad, "+
+			"cod_partido, "+
+			"partido, "+
+			"sucursal_tecnica, "+
+			"nom_suc_tecnica, "+
+			"cod_subestacion, "+
+			"nombre_subestacion, "+
+			"alimentador, "+
+			"centro_trans, "+
+			"trabajo_requerido, "+
+			"cod_agrupacion, "+
+			"reclamo_reincident, "+
+			"plazo_tecnico, "+
+			"fecha_vto_real_con, "+
+			"nro_expediente, "+
+			"sucursal_comercial, "+
+			"sin_tecni, "+
+			"fecha_ini_edesur, "+
+			"derivado, "+
+			"fecha_reclamo "+
+			")VALUES( "+
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
+			"?, ?, ?, ?, ?, ?, ?, ?) ";
+	
+	private static String XPRO_ENVIAR = "EXECUTE PROCEDURE xpro_enviar ( " +
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
 }
