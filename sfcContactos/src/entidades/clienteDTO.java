@@ -111,5 +111,7 @@ public class clienteDTO {
 	public double	saldo_calculado;
 	public long		numero_medidor2;
 	public long		numero_medidor3;
-	
+	public String	sucursal_padre;
+	public String	marca_medidor;
+	public String	modelo_medidor;
 }

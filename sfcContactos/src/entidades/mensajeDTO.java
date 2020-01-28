@@ -66,9 +66,8 @@ public class mensajeDTO {
 		
 		sLinea += getData(sRolDestino, sAreaDestino, miCliente, regConta, regMot, miTema, regPar);
 		sLinea+=String.format("%08d", lNroMensaje) + "þ";
-		
+
 		this.sTexto = sLinea;
-		
 		
 	}
 	

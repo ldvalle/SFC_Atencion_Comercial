@@ -40,7 +40,7 @@ public class procCalcomesSRV {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		// Cargar Pedidos
 		Collection<interfaceDTO>lstInterface = null;
 		try {
@@ -104,7 +104,7 @@ public class procCalcomesSRV {
 				lNroReclamo = miDao.getNroReclamo();
 
 				//Obtener Analista Edesur
-				sRolAnalista = miDao.getAnalista(regData.sucursal);
+				sRolAnalista = miDao.getAnalista(regCliente.sucursal);
 							
 				
 				//Cargar CE_RECLAMO
@@ -125,7 +125,7 @@ public class procCalcomesSRV {
 				//********************************
 				
 				long lNroMensaje = miDao.getNroMensaje();
-				
+			
 				//Carga carpeta para mensaje
 				reclaTecniProce recla = null;
 				recla = miDao.getReclaTecniProce(reclamo.getCodMotivo(), reclamo.getCodTema());
@@ -134,7 +134,12 @@ public class procCalcomesSRV {
 				String sProveedor = miDao.getProveedor(recla.getCarProcPendiente());
 				String partes[] = sProveedor.split(Pattern.quote("|"));
 				String sCodProveedor = partes[0];
-				String sAreaProveedor = partes[1];
+				String sAreaProveedor ="";
+				if(partes.length>1) {
+					sAreaProveedor = partes[1];
+				}else {
+					sAreaProveedor = sCodProveedor;
+				}
 				postalLinkDTO delivery = new postalLinkDTO("EVDI", "SIC0","","",sRolAnalista, sCodProveedor, sAreaProveedor);
 
 				//Arma Mensaje
@@ -152,6 +157,8 @@ public class procCalcomesSRV {
 				//Lanzar todo !!!
 				if(!miDao.regiCalcom(lNroReclamo, lNroMensaje, sNroOrden, regData, regPar, regParLocal, regCliente, delivery, reclamo, clienteReclamo, recla, recUni, mensaCalcom )) {
 					System.out.println(String.format("No se pudo registrar el calcom %d para tema %d.", regInter.caso, regData.tema));
+				}else {
+					System.out.println(String.format("Se generó Mensaje: %d para reclamo: %d y Orden Segen: %s", lNroMensaje, lNroReclamo, sNroOrden));
 				}
 				
 				

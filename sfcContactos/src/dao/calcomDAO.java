@@ -36,6 +36,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		
 		return miLista;
@@ -53,7 +54,9 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
+
 		return miLista;
 	}
 	
@@ -64,6 +67,7 @@ public class calcomDAO {
 			try(PreparedStatement stmt = connection.prepareStatement(SEL_PARAMETROS)){
 				try(ResultSet rs = stmt.executeQuery()){
 					if(rs.next()) {
+						
 						miReg.setDocResol(rs.getInt(1));
 						miReg.setDocPeri(rs.getInt(2));
 						miReg.setDocumInf24(rs.getInt(3));
@@ -84,6 +88,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		
 		return miReg;
@@ -103,6 +108,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return miReg;
 	}
@@ -120,6 +126,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return (iValor>0)?true:false;
 	}
@@ -137,6 +144,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return (iValor>0)?true:false;
 	}
@@ -154,6 +162,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return (iValor>0)?true:false;
 	}
@@ -171,6 +180,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return (iValor>0)?true:false;
 	}
@@ -189,6 +199,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return (iValor>0)?true:false;
 	}
@@ -205,6 +216,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 
 		return sValor;
@@ -232,9 +244,12 @@ public class calcomDAO {
 						miReg.tiene_corte_rest = rs.getString(12);
 						miReg.estado_cobrabilida = rs.getString(13);
 						miReg.numero_medidor = rs.getLong(14);
+						miReg.sucursal = rs.getString(15);
+						miReg.nom_comuna = rs.getString(16);
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return miReg;
 	}
@@ -262,6 +277,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return miReg;
 	}
@@ -285,6 +301,7 @@ public class calcomDAO {
 			stmt.executeUpdate();
 			
 			connection.commit();
+			UConnection.nullConnection();
 		}
 		return nroReclamo;
 	}
@@ -298,9 +315,12 @@ public class calcomDAO {
 				try(ResultSet rs = stmt.executeQuery()){
 					if(rs.next()) {
 						sValor=rs.getString(1);
+					}else {
+						System.out.println("No se encontró analísta EDESUR para sucursal " + sucursal);
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 
 		return sValor;
@@ -320,7 +340,7 @@ public class calcomDAO {
 			stmt.setString(2, sArea);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
-				sValor=rs.getString(1);
+				sValor=rs.getString(1).trim();
 				lValor= Long.parseLong(sValor.substring(sArea.length()+1, sValor.length()))+1;
 				sNroModif = sArea.trim() + String.format("%08d", lValor);
 			}else {
@@ -343,6 +363,7 @@ public class calcomDAO {
 			stmt.executeUpdate();
 			
 			connection.commit();
+			UConnection.nullConnection();
 		}
 
 		
@@ -451,7 +472,12 @@ public class calcomDAO {
 				return false;
 			}
 			
+			if(!setRecRecUni(connection, recUni)) {
+				System.out.println("Falló insert de REC_REC_UNI.");
+				return false;
+			}
 			connection.commit();
+			UConnection.nullConnection();
 		}
 	
 		
@@ -471,6 +497,7 @@ public class calcomDAO {
 	}
 	
 	private boolean insReclamoEtapa(Connection connection, paramLocalDTO ParLocal, ceReclamoDTO reclamo) throws SQLException {
+
 		try(PreparedStatement stmt = connection.prepareStatement(INS_RECLAMO_ETAPA)){
 			stmt.setLong(1, reclamo.getReclamo());
 			stmt.setInt(2, reclamo.getCodDocumEnt());
@@ -563,7 +590,6 @@ public class calcomDAO {
 	}
 	
 	private boolean insReclamo(Connection connection, ceReclamoDTO reclamo) throws SQLException {
-		
 		try(PreparedStatement stmt = connection.prepareStatement(INS_RECLAMO)){
 
 			stmt.setLong(1, reclamo.getReclamo());
@@ -647,10 +673,13 @@ public class calcomDAO {
 			try(PreparedStatement stmt = connection.prepareStatement(SEL_NRO_MENSAJE)){
 				try(ResultSet rs = stmt.executeQuery()){
 					if(rs.next()) {
-						nroMensaje = rs.getLong(1);
+						nroMensaje = rs.getLong(2);
+					}else {
+						System.out.println("No se obtuvo Nro.de Mensaje");
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return nroMensaje;
 	}
@@ -668,6 +697,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return sDescri;
 	}
@@ -685,6 +715,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return sDescri;
 	}
@@ -707,6 +738,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return recla;
 	}
@@ -724,6 +756,7 @@ public class calcomDAO {
 					}
 				}
 			}
+			UConnection.nullConnection();
 		}
 		return sProve.trim();
 	}
@@ -761,6 +794,7 @@ public class calcomDAO {
 						}
 					}
 				}
+				UConnection.nullConnection();
 			}
 		}else {
 			try(Connection connection = UConnection.getConnection()){
@@ -791,6 +825,7 @@ public class calcomDAO {
 						}
 					}
 				}
+				UConnection.nullConnection();
 			}
 			
 		}
@@ -799,7 +834,7 @@ public class calcomDAO {
 
 
 	private boolean setMensaCabec(Connection connection, long lNroMensaje, ceReclamoDTO reclamo, postalLinkDTO delivery) throws SQLException{
-		
+System.out.println("Mensaje " + lNroMensaje);		
 		try(PreparedStatement stmt = connection.prepareStatement(INS_MENSA_CABEC)){
 
 			stmt.setLong(1, lNroMensaje);
@@ -970,9 +1005,9 @@ public class calcomDAO {
 			  "pa_tema_qja, "+
 			  "pa_tema_req, "+
 			  "pa_doc_cierre, "+
-			  "pa_doc_cednot,"+
+			  "pa_doc_cednot, "+
 			  "pa_doc_srpta "+
-			  "FROM ce_parametros ";
+			  "FROM contacto:ce_parametros ";
 	
 	private static final String VAL_CLIENTE_T1 = "SELECT COUNT(*) FROM synergia:cliente "+
 			"WHERE numero_cliente = ? "+
@@ -985,7 +1020,7 @@ public class calcomDAO {
 			"WHERE tt_tema = ? "+
 			"AND (tt_fecha_baja IS NULL OR tt_fecha_baja > TODAY) ";
 
-	private static final String VAL_MOTIVO = "SELECT COUNT(*) FROM ce_tab_motivo "+
+	private static final String VAL_MOTIVO = "SELECT COUNT(*) FROM contacto:ce_tab_motivo "+
 			"WHERE tv_motivo = ? "+
 			"AND tv_cod_tema = ? "+
 			"AND (tv_fecha_baja IS NULL OR tv_fecha_baja > TODAY) ";
@@ -993,7 +1028,7 @@ public class calcomDAO {
 	private static final String SEL_PARAM_LOCAL = "SELECT mt_plazo, "+
 		    "mt_cod_docum_ent, "+
 		    "mt_cod_docum_sal "+
-		    "FROM ce_mot_transi "+
+		    "FROM contacto:ce_mot_transi "+
 		    "WHERE mt_cod_tema = ? "+
 		    "AND mt_reclamo_ini = 'S' "+
 		    "AND mt_default = 'S' ";
@@ -1024,7 +1059,9 @@ public class calcomDAO {
 			"c.tarifa, "+
 			"c.tiene_corte_rest , "+
 			"c.estado_cobrabilida, "+
-			"m.numero_medidor "+
+			"m.numero_medidor, "+
+			"c.sucursal, " +
+			"c.nom_comuna "+
 			"FROM synergia:cliente c, synergia:medid m "+
 			"WHERE c.numero_cliente = ? "+
 			"AND m.numero_cliente = c.numero_cliente "+
@@ -1185,13 +1222,11 @@ public class calcomDAO {
 			"rt_aceptada, "+
 			"rt_cerrado, "+
 			"rt_ndocum_enre, "+
-			"rt_histo_mensa, "+
-			"rt_expediente, "+
-			"rt_fecha_excepcon "+
+			"rt_histo_mensa "+
 			")VALUES( "+
 			"?, ?, ?, CURRENT, ?, ?, "+
 			"'N', 'S', 'N', 'N', "+ //El segundo campo 'S' es xq se envia el mensaje en el mismo acto
-			"?, 'N', 'N', 'N') ";
+			"?, 'N') ";
 
 	private static final String INS_RECLAMO_INTERV = "INSERT INTO contacto:ce_reclamo_interv "+
 			"(ri_reclamo, "+
@@ -1394,7 +1429,7 @@ public class calcomDAO {
 			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
 			"?, ?, ?, ?, ?, ?, ?, ?) ";
 	
-	private static String XPRO_ENVIAR = "EXECUTE PROCEDURE xpro_enviar ( " +
+	private static final String XPRO_ENVIAR = "EXECUTE PROCEDURE xpro_enviar ( " +
 			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 }

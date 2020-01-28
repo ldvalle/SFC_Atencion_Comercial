@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 //import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.io.*;
 
 public class contactoDAO {
 
@@ -30,6 +31,7 @@ public class contactoDAO {
 
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(sql);
 			rs = pstm.executeQuery();
 			
@@ -44,6 +46,7 @@ public class contactoDAO {
 			}
 			
 		}catch(SQLException ex){
+			
 			ex.printStackTrace();
 			throw new RuntimeException(ex);
 		}finally{
@@ -51,8 +54,10 @@ public class contactoDAO {
 				if(rs != null) rs.close();
 				if(pstm != null) pstm.close();
 			}catch(Exception ex){
-				ex.printStackTrace();
-				throw new RuntimeException(ex);
+				System.out.println("No hay filas en cursor ppal.");
+				return miLista;
+				//ex.printStackTrace();
+				//throw new RuntimeException(ex);
 			}
 		}
 		
@@ -195,7 +200,7 @@ public class contactoDAO {
 						
 			rs = pstm.executeQuery();
 			
-			while(rs.next()) {
+			if(rs.next()) {
 			
 				miClie.numero_cliente = rs.getLong("numero_cliente");
 				miClie.nombre = rs.getString("nombre");
@@ -230,7 +235,15 @@ public class contactoDAO {
 				miClie.zona = rs.getInt("zona");
 				miClie.correlativo_ruta = rs.getLong("correlativo_ruta");
 				miClie.numero_medidor=rs.getLong("numero_medidor");
-				
+				miClie.marca_medidor = rs.getString("marca_medidor");
+				miClie.modelo_medidor = rs.getString("modelo_medidor");
+				miClie.potencia_contrato = rs.getDouble("potencia_contrato");
+				miClie.tipo_empalme = rs.getString("tipo_empalme");
+				miClie.obs_dir = rs.getString("obs_dir");
+				miClie.info_adic_lectura = rs.getString("info_adic_lectura");
+				miClie.barrio = rs.getString("barrio");
+				miClie.nom_barrio = rs.getString("nom_barrio");
+				miClie.sucursal_padre=rs.getString("suc_padre");
 				iFilas++;
 			}
 
@@ -260,7 +273,7 @@ public class contactoDAO {
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
 		String sql, sRolOrigen, sRolDestino, sAreaDestino, sMotRST;
-		String sArea="SIC0";
+		String sArea= "0000"; //"SIC0";
 		String sNroOrden="";
 		long lNroContacto;
 		long lNroMensaje;
@@ -274,11 +287,12 @@ public class contactoDAO {
 		Timestamp tFechaInicio;
 		String sCodAgrupa="";
 		String sReincidencia="";
+		String sDescriEstado="";
 		
 		try{
 			con = UConnection.getConnection();
 			con.setAutoCommit(false);
-		
+			
 			//Buscar Nro.Contacto
 			sql = query6();
 			pstm = con.prepareStatement(sql);
@@ -307,14 +321,14 @@ public class contactoDAO {
 			pstm.executeUpdate();
 
 			pstm=null;
-			
+System.out.println("Grabo contacto");			
 			//Grabar Motivo
 			sql = query9(regMot);
 			pstm = con.prepareStatement(sql);
 			pstm.executeUpdate();
 			
 			pstm=null;
-			
+System.out.println("Grabo motivo");			
 			//Grabar observaciones
 			for(observaCtoDTO regObs :vecObserva ) {
 				sql = query10(lNroContacto, regObs);
@@ -323,6 +337,8 @@ public class contactoDAO {
 				pstm=null;
 			}
 			pstm=null;
+			sDescriEstado="Contacto Generado";
+System.out.println("Grabo observaciones");
 
 			//********** AREA SEGEN ********
 			
@@ -355,7 +371,8 @@ public class contactoDAO {
 			}
 			
 			//Obtener Destino
-			sRolOrigen = "E17317";
+			//sRolOrigen = "E17317";
+			sRolOrigen = "SALESFORCE";
 			sDireDestino = getDestino(regConta, regMot, miTema);
 			
 			String partes[] = sDireDestino.split(Pattern.quote("|"));
@@ -369,6 +386,10 @@ public class contactoDAO {
 
 			//Armar Mensaje
 			mensajeDTO regMen = new mensajeDTO(lNroMensaje, fechaInicio, sRolOrigen, sRolDestino, sAreaDestino, "M_SEGEN", miCliente, regConta, regMot, miTema, regPar, vecObserva);
+			if(miTema.sGeneraOT.equals("OT")) {
+				regMen.sTexto += getOTActivas(regConta.co_numero_cliente);
+			}
+			
 			//mensajeDTO regMen = new mensajeDTO(lNroMensaje, regConta.co_numero, regConta.co_numero_cliente, Integer.parseInt(regMot.mo_cod_motivo), Integer.parseInt(regMot.mo_cod_mot_empresa), sFecha, sRolOrigen, sRolDestino, sAreaDestino, "M_SEGEN");
 
 			//Enviar Mensaje
@@ -392,7 +413,7 @@ public class contactoDAO {
 			
 			pstm.execute();
 			pstm=null;
-			
+System.out.println("Grabo mensaje " + regMen.lMensaje);			
 			//Obtiene nro.de Orden
 			sNroOrden = getNroOrden();
 			
@@ -423,7 +444,7 @@ public class contactoDAO {
 			pstm.executeUpdate();
 			
 			pstm=null;
-			
+System.out.println("Grabo Orden");			
 			//Graba Etapa Orden
 			pstm = con.prepareStatement(SET_ETAPA_ORDEN);
 			pstm.setLong(1, regOrden.mensaje_xnear);
@@ -431,7 +452,7 @@ public class contactoDAO {
 			pstm.executeUpdate();
 			
 			pstm=null;
-			
+System.out.println("Graba Etapa Orden");			
 			//grabar cto_segen
 			pstm = con.prepareStatement(SET_CTO_SEGEN);
 			pstm.setLong(1, regOrden.mensaje_xnear);
@@ -453,12 +474,15 @@ public class contactoDAO {
 			pstm.setString(15, regOrden.trabajo);
 			
 			pstm.executeUpdate();
+			sDescriEstado="Segen Enviado";
 			
 			pstm=null;
 			
+System.out.println("Grabo Contacto - segen");			
 			
 			//si la carpeta es de Recla Tecni Proce
 			if(partes.length == 4) {
+System.out.println("Va a hacer Tecni Proce");			
 				// Ver si hay reiteracion
 				pstm = con.prepareStatement(SEL_REINCIDENCIA);
 				pstm.setLong(1, regOrden.mensaje_xnear);
@@ -531,28 +555,144 @@ public class contactoDAO {
 				pstm.executeUpdate();
 				
 				pstm=null;
+System.out.println("Grabo rec_rec_uni");				
+			}
+			
+			//Generar la OT
+			if(miTema.sGeneraOT.equals("OT")) {
+System.out.println("Entro en OT");				
+				String sNroCB = getNroCb(miCliente.marca_medidor, miCliente.modelo_medidor);
+				ot_macDTO miOtMac = new ot_macDTO(lNroMensaje, miCliente, regTecni, miTema, regPar.dFchaVtoCt, sAreaDestino, sRolOrigen, sArea);
+				// Inserta en OT_MAC
+				pstm=con.prepareStatement(INS_OT_MAC);
+				
+				pstm.setLong(1, miOtMac.numero_cliente);
+				pstm.setLong(2, miOtMac.mensaje_xnear);
+				pstm.setString(3, miOtMac.proced.trim());
+				pstm.setString(4, miOtMac.envia_sap.trim());
+				pstm.setString(5, miOtMac.estado.trim());
+				pstm.setString(6, miOtMac.status.trim());
+				pstm.setString(7, miOtMac.sucursal_padre.trim());
+				pstm.setString(8, miOtMac.sucursal.trim());
+				pstm.setInt(9, miOtMac.sector);
+				pstm.setInt(10, miOtMac.zona);
+				pstm.setLong(11, miOtMac.correlativo_ruta);
+				pstm.setString(12, miOtMac.tipo_traba.trim());
+				pstm.setString(13, miOtMac.area_interloc.trim());
+				pstm.setString(14, miOtMac.motivo.trim());
+				pstm.setString(15, miOtMac.rol_ejecuta.trim());
+				pstm.setString(16, miOtMac.area_ejecuta.trim());
+				pstm.setDouble(17, miOtMac.potencia);
+				pstm.setString(18, miOtMac.tension.trim());
+				pstm.setString(19, miOtMac.acometida.trim());
+				pstm.setString(20, miOtMac.toma.trim());
+				pstm.setString(21, miOtMac.conexion.trim());
+				pstm.setTimestamp(22, new Timestamp(miOtMac.fecha_vto.getTime()));
+				
+				pstm.executeUpdate();
+				
+				pstm=null;
+System.out.println("Grabo ot_mac");				
+				long lNroOrdenOT = getNroOt(miOtMac.mensaje_xnear);
+				
+				//Inserta en OT_HISEVEN
+				pstm=con.prepareStatement(INS_OT_HISEVEN);
+				
+				pstm.setLong(1, lNroOrdenOT);
+				pstm.setLong(2, miOtMac.numero_cliente);
+				pstm.setString(3, miOtMac.status.trim());
+
+				pstm.executeUpdate();
+				
+				pstm=null;
+System.out.println("Grabo ot_hiseven");				
+				//RecuperaPrecintos
+				String[] lstPrecintos = getPrecintos(miCliente).toArray(new String[0]);
+				pstm=null;
+				
+				//OT_MAC_SAP
+				
+				ot_mac_sapDTO miOtMacSap = new ot_mac_sapDTO(lNroOrdenOT, lNroMensaje, miCliente, regTecni, miTema, regPar.dFchaVtoCt, sAreaDestino, sRolOrigen, sArea, lstPrecintos, sNroCB);
+				String sCodBar = miOtMacSap.cod_barra.substring(0,2);
+				
+				pstm=con.prepareStatement(INS_OT_MAC_SAP);
+				
+				pstm.setString(1, miOtMacSap.tipo_ifaz);
+				pstm.setString(2, miOtMacSap.nro_orden);
+				pstm.setString(3, miOtMacSap.tipo_traba);
+				pstm.setString(4, miOtMacSap.sucursal);
+				pstm.setString(5, miOtMacSap.area_ejecuta);
+				pstm.setString(6, miOtMacSap.motivo);
+				pstm.setString(7, miOtMacSap.obs_dir);
+				pstm.setString(8, miOtMacSap.obs_lectu);
+				pstm.setString(9, miOtMacSap.obs_segen);
+				pstm.setString(10, miOtMacSap.area_interloc);
+				pstm.setLong(11, miOtMacSap.nro_medidor);
+				pstm.setString(12, miOtMacSap.marca_med);
+				pstm.setString(13, miOtMacSap.modelo_med);
+				pstm.setString(14, miOtMacSap.cla_servi);
+				pstm.setDouble(15, miOtMacSap.potencia);
+				pstm.setString(16, miOtMacSap.tension);
+				pstm.setString(17, miOtMacSap.acometida);
+				pstm.setString(18, miOtMacSap.toma);
+				pstm.setString(19, miOtMacSap.conexion);
+				pstm.setString(20, miOtMacSap.pre1_ubic);
+				pstm.setString(21, miOtMacSap.pre2_ubic);
+				pstm.setString(22, miOtMacSap.pre3_ubic);
+				pstm.setString(23, miOtMacSap.ruta_lectura);
+				pstm.setString(24, miOtMacSap.nombre_cli);
+				pstm.setLong(25, miOtMacSap.nro_cli);
+				pstm.setString(26, miOtMacSap.nom_entre);
+				pstm.setString(27, miOtMacSap.nom_entre1);
+				pstm.setString(28, miOtMacSap.telefono);
+				pstm.setString(29, miOtMacSap.nom_calle);
+				pstm.setString(30, miOtMacSap.nro_dir);
+				pstm.setString(31, miOtMacSap.nom_partido);
+				pstm.setString(32, miOtMacSap.piso_dir);
+				pstm.setString(33, miOtMacSap.depto_dir);
+				pstm.setString(34, miOtMacSap.nom_comuna);
+				pstm.setInt(35, miOtMacSap.cod_postal);
+				pstm.setTimestamp(36, new Timestamp(miOtMacSap.fecha_vto.getTime()));
+				pstm.setString(37, sCodBar);
+				pstm.setString(38, miOtMacSap.rol_creador);
+				pstm.setString(39, miOtMacSap.nombre_rol);
+				pstm.setString(40, miOtMacSap.proced);
+				pstm.setLong(41, miOtMacSap.nro_proced);
+				
+				
+				int iFilas = pstm.executeUpdate();
+				sDescriEstado="OT Generada";
+				
+				pstm=null;
+				
+System.out.println("Grabo OT_MAC_SAP filas " + iFilas);
 				
 			}
 			
 			//Upd. tabla interface
 			sql = query11();
 			pstm = con.prepareStatement(sql);
-			pstm.setLong(1, regInt.caso);
-			pstm.setLong(2, regInt.nro_orden);
+			pstm.setString(1, sDescriEstado);
+			pstm.setLong(2, regInt.caso);
+			pstm.setLong(3, regInt.nro_orden);
 			pstm.executeUpdate();
 	
+System.out.println("Actualizo interface");
 
-			con.commit();
+			//con.commit();
 			
 			System.out.println("Se Grabó Contacto: " + lNroContacto);
 			System.out.println("Se Grabó Mensaje: " + lNroMensaje);
 			System.out.println("Se Grabó Orden: " + sNroOrden);
 			
-		}catch(Exception ex){
+		}catch(SQLException sqle){
 			System.out.println("genContacto()");
 			System.out.println("Se aborta pedido porque no se pudo generar contacto");
 			System.out.println("Caso " + regInt.caso + " Orden " + regInt.nro_orden);
 			
+			System.out.println("Código de Error: " + sqle.getErrorCode() + "\n" +
+					    "SLQState: " + sqle.getSQLState() + "\n" +
+					    "Mensaje: " + sqle.getMessage() + "\n");			
 			try {
 				con.rollback();
 				System.out.println("Rollback establecido");
@@ -560,8 +700,8 @@ public class contactoDAO {
 				exSQL.printStackTrace();
 			}
 			
-			ex.printStackTrace();
-			throw new RuntimeException(ex);
+			sqle.printStackTrace();
+			throw new RuntimeException(sqle);
 		}finally{
 			try{
 				if(rs != null) rs.close();
@@ -591,6 +731,7 @@ public class contactoDAO {
 		
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(SEL_MOTIVOS_DESC);
 			pstm.setString(1, Motivo);
 			pstm.setString(2, Submotivo);
@@ -664,6 +805,7 @@ public class contactoDAO {
 		
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			cal = con.prepareCall(sql);
 			rs = cal.executeQuery();
 
@@ -689,6 +831,38 @@ public class contactoDAO {
 		return lNroMensaje;
 	}
 
+	private long getNroOt(long lNroMensaje) {
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		
+		long lNroOt=0;
+		try{
+			con = UConnection.getConnection();
+			con.setAutoCommit(false);
+			pstm = con.prepareStatement(SEL_NRO_OT);
+			pstm.setLong(1, lNroMensaje);
+
+			rs = pstm.executeQuery();
+
+			if(rs.next()){
+				lNroOt = rs.getLong(1);
+			}
+		}catch(Exception ex){
+			System.out.println("getNroOt()");
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
+		}finally{
+			try{
+				if(rs != null) rs.close();
+					}catch(Exception ex){
+				ex.printStackTrace();
+				throw new RuntimeException(ex);
+			}
+		}
+		return lNroOt;
+	}
+	
 	private String getRolDestino(String sProcedimiento, String sSucursal) {
 		String sRol="";
 		
@@ -702,6 +876,7 @@ public class contactoDAO {
 		
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(sql);
 
 			pstm.setString(1, sProcedimiento);
@@ -737,6 +912,7 @@ public class contactoDAO {
 
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(SEL_TEMA_TRABAJO);
 			pstm.setString(1, sMotClie);
 			pstm.setString(2, sMotEmpre);
@@ -747,6 +923,7 @@ public class contactoDAO {
 				miTema.sCodTrabajo=rs.getString(2);
 				miTema.sDescTema=rs.getString(3).trim();
 				miTema.sDescTrabajo=rs.getString(4).trim();
+				miTema.sGeneraOT = rs.getString(5).trim();
 			}
 			
 		}catch(Exception ex){
@@ -775,6 +952,7 @@ public class contactoDAO {
 		
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(GET_NRO_ORDEN);
 			rs = pstm.executeQuery();
 			
@@ -824,6 +1002,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 		try{
 			
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(SEL_DATA_DESTINO);
 			pstm.setString(1, regMot.mo_cod_motivo.trim());
 			pstm.setString(2, regMot.mo_cod_mot_empresa.trim());
@@ -868,13 +1047,22 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 				rs=null;
 				
 				//El rol destino
-				pstm = con.prepareStatement(SEL_ROL_DESTINO);
-				pstm.setString(1, regMot.mo_cod_motivo.trim());
-				pstm.setString(2, regMot.mo_cod_mot_empresa.trim());
+				if(regTema.sGeneraOT.equals("OT")) {
+					pstm = con.prepareStatement(SEL_ROL_DESTINO_OT);
+					pstm.setString(1, regCto.co_suc_cli.trim());
+				}else {
+					pstm = con.prepareStatement(SEL_ROL_DESTINO);
+					pstm.setString(1, regMot.mo_cod_motivo.trim());
+					pstm.setString(2, regMot.mo_cod_mot_empresa.trim());
+				}
 				rs=pstm.executeQuery();
 				
 				if(rs.next()) {
-					sDatos = rs.getString(1).trim() + sSucur.trim();
+					if(regTema.sGeneraOT.equals("OT")) {
+						sDatos = rs.getString(1).trim();
+					}else {
+						sDatos = rs.getString(1).trim() + sSucur.trim();
+					}
 				}else {
 					System.out.println("No se pudo encontrar Rol destino para el SEGEN");
 				}
@@ -921,6 +1109,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 		
 		try{
 			con = UConnection.getConnection();
+			con.setAutoCommit(false);
 			pstm = con.prepareStatement(SEL_TECNI);
 			pstm.setLong(1, lNroCliente);
 			rs = pstm.executeQuery();
@@ -947,6 +1136,8 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 				miTecni.tec_alimentador=rs.getString(19);
 				miTecni.tec_subestacion=rs.getString(20); 
 				miTecni.tec_nom_subest=rs.getString(21);
+				miTecni.acometida = rs.getString(22);
+				miTecni.tipo_conexion = rs.getString(23);
 			}
 			
 		}catch(Exception ex){
@@ -964,6 +1155,142 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 		}
 		
 		return miTecni;
+	}
+	
+	private String getOTActivas(long lNroCliente) {
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		String sCadena="";
+		
+		long lOTNroCliente;
+		long lNroMsg;
+		String sProced;
+		long lNroSolicitud;
+		String sOTStatus;
+		Date dFechaInicio;
+		
+		SimpleDateFormat fmtDate= new SimpleDateFormat("dd/mm/yyyy HH:MM:SS");
+		String sFechaAux;
+		int i=0;
+		
+		try{
+			con = UConnection.getConnection();
+			con.setAutoCommit(false);
+			pstm = con.prepareStatement(SEL_OT_ACTIVAS);
+			pstm.setLong(1, lNroCliente);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				if(i==0) {
+					sCadena="El cliente tiene las siguientes OTs Activas\r\n";
+					i=1;
+				}
+				
+				lOTNroCliente = rs.getLong(1);
+				lNroMsg = rs.getLong(2);
+				sProced = rs.getString(3);
+				lNroSolicitud = rs.getLong(4);
+				sOTStatus = rs.getString(5);
+				dFechaInicio = rs.getDate(6);
+				
+				sFechaAux = fmtDate.format(dFechaInicio);
+			
+				sCadena += "Mensaje " + sProced.trim() + " " + lNroMsg + " del " + sFechaAux + "\r\n";
+			}
+			
+		}catch(Exception ex){
+			System.out.println("Error al cargar OTs Activas. getOTActivas()");
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
+		}finally{
+			try{
+				if(rs != null) rs.close();
+				if(pstm != null) pstm.close();
+			}catch(Exception ex){
+				ex.printStackTrace();
+				throw new RuntimeException(ex);
+			}
+		
+		}
+		return sCadena;
+	}
+	
+	private Collection<String> getPrecintos(clienteDTO miCliente){
+		Vector<String> miLista = new Vector<String>();
+		
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		String sValor="";
+System.out.println("Precintos para cliente " + miCliente.numero_cliente);		
+		try{
+			con = UConnection.getConnection();
+			con.setAutoCommit(false);
+			pstm = con.prepareStatement(SEL_PRECINTOS);
+			pstm.setLong(1, miCliente.numero_cliente);
+			pstm.setLong(2, miCliente.numero_medidor);
+			pstm.setString(3, miCliente.marca_medidor.trim());
+			pstm.setLong(4, miCliente.numero_cliente);
+			rs = pstm.executeQuery();
+			
+			while(rs.next()){
+System.out.println("Encontro precinto");				
+				sValor=rs.getString(1);
+				miLista.add(sValor);
+			}
+			
+		}catch(Exception ex){
+			System.out.println("Error al cargar precintos. getPrecintos()");
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
+		}finally{
+			try{
+				if(rs != null) rs.close();
+				if(pstm != null) pstm.close();
+			}catch(Exception ex){
+				ex.printStackTrace();
+				throw new RuntimeException(ex);
+			}
+		
+		}
+System.out.println("Le va a dar los precintos");		
+		return miLista;
+	}
+	
+	private String getNroCb(String sMarca, String sModelo) {
+		String sCod="";
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		
+		try{
+			con = UConnection.getConnection();
+			con.setAutoCommit(false);
+			pstm = con.prepareStatement(SEL_NRO_CB);
+			pstm.setString(1, sMarca.trim());
+			pstm.setString(2, sModelo.trim());
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				sCod=rs.getString(1);
+			}
+			
+		}catch(Exception ex){
+			System.out.println("Error al Buscar Nro.Cb del Medidor . getNroCb()");
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
+		}finally{
+			try{
+				if(rs != null) rs.close();
+				if(pstm != null) pstm.close();
+			}catch(Exception ex){
+				ex.printStackTrace();
+				throw new RuntimeException(ex);
+			}
+		
+		}
+		return sCod;
 	}
 	
 	private String query1() {
@@ -1036,7 +1363,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"c.tipo_iva, "+
 			"c.tipo_cliente, "+
 			"c.rut, "+
-			"c.cuenta_conver, "+
+			"NVL(c.cuenta_conver, '0') cuenta_conver, "+
 			"c.nom_sucursal, "+
 			"c.cod_entre, "+
 			"c.nom_entre, "+
@@ -1044,11 +1371,21 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"c.nom_entre1, "+
 			"c.zona, " +
 			"c.correlativo_ruta, "+
-			"m.numero_medidor " +
-			"FROM cliente c, medid m " +
+			"m.numero_medidor, " +
+			"m.marca_medidor, " +
+			"m.modelo_medidor, " +
+			"c.potencia_contrato, " +
+			"c.tipo_empalme, " +
+			"c.obs_dir, " +
+			"c.info_adic_lectura, " +
+			"c.barrio, " +
+			"c.nom_barrio, " +
+			"o.suc_padre " +
+			"FROM cliente c, medid m, OUTER ot_sucursal o " +
 			"WHERE c.numero_cliente = ? " +
 			"AND m.numero_cliente = c.numero_cliente " +
-			"AND m.estado = 'I' ";
+			"AND m.estado = 'I' " +
+			"AND o.suc_hijo = c.sucursal ";
 			
 
 	private String query6() {
@@ -1203,7 +1540,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 		
 		sql = "UPDATE sfc_interface SET ";
 		sql += "estado = 1, ";
-		sql += "descri_estado = 'Contacto Generado', ";
+		sql += "descri_estado = ?, ";
 		sql += "fecha_estado = CURRENT ";
 		sql += "WHERE caso = ? ";
 		sql += "AND nro_orden = ? ";
@@ -1263,7 +1600,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 	}
 
 	private static String SEL_TEMA_TRABAJO= "SELECT tt_cod_tema, tt_cod_trabajo, "+
-			"t1.descripcion, t2.descripcion "+
+			"t1.descripcion, t2.descripcion, TRIM(t1.valor_alf) "+
 			"FROM contacto:ct_tab_mot_tt, tabla t1, tabla t2 "+
 			"WHERE tt_cod_motivo = ? "+
 			"AND tt_cod_mot_empresa = ? "+
@@ -1301,6 +1638,12 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"AND te_cod_mot_empresa = ? "+
 			"AND te_fecha_alta <= TODAY "+
 			"AND (te_fecha_baja IS NULL OR te_fecha_baja > TODAY) ";
+	
+	private static String SEL_ROL_DESTINO_OT = "SELECT TRIM(otx_carpeta) " + 
+			"FROM ot_xpro_accion " + 
+			"WHERE otx_sucursal = ? " + 
+			"AND otx_proced   = 'M_SEGEN' " + 
+			"AND otx_accion   = '10' ";
 	
 	private static String SEL_AREA_DESTINO = "SELECT area FROM rol "+
 			"WHERE rol = ? ";
@@ -1363,6 +1706,7 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"tec_nro_dir, tec_piso_dir, tec_depto_dir, "+
 			"tec_cod_entre, tec_entre_calle1, tec_cod_ycalle, tec_entre_calle2, "+
 			"tec_manzana, tec_centro_trans, tec_alimentador, tec_subestacion , tec_nom_subest "+ 
+			", acometida, tipo_conexion " +
 			"FROM synergia:tecni "+
 			"WHERE numero_cliente = ? ";
 
@@ -1426,4 +1770,137 @@ System.out.println("nro orden a insertar en numao [" + sNroOrden + "]");
 			"AND te_fecha_alta <= TODAY "+
 			"AND (te_fecha_baja IS NULL OR te_fecha_baja > TODAY) ";
 
+	private static String SEL_OT_ACTIVAS = "SELECT ot_numero_cliente, " + 
+			"ot_mensaje_xnear, " + 
+			"ot_proced, " + 
+			"ot_nro_solicitud, " + 
+			"ot_status, " + 
+			"ot_fecha_inicio " + 
+			"FROM ot_mac " + 
+			"WHERE ot_numero_cliente = ? " + 
+			"AND ot_status <> 'A' " + 
+			"ORDER BY ot_fecha_inicio ";
+	
+	private static String INS_OT_MAC = "INSERT INTO ot_mac ( " + 
+			"ot_numero_cliente, " + 
+			"ot_mensaje_xnear, " + 
+			"ot_proced, " + 
+			"ot_envia_sap, " + 
+			"ot_estado, " + 
+			"ot_fecha_est, " + 
+			"ot_status, " + 
+			"ot_fecha_status, " + 
+			"ot_fecha_inicio, " + 
+			"ot_sucursal_padre, " + 
+			"ot_sucursal, " + 
+			"ot_sector, " + 
+			"ot_zona, " + 
+			"ot_corr_ruta, " + 
+			"ot_tipo_traba, " + 
+			"ot_area_interloc, " + 
+			"ot_motivo, " + 
+			"ot_rol_ejecuta, " + 
+			"ot_area_ejecuta, " + 
+			"ot_potencia, " + 
+			"ot_tension, " + 
+			"ot_acometida, " + 
+			"ot_toma, " + 
+			"ot_conexion, " + 
+			"ot_fecha_vto " + 
+			")VALUES( " + 
+			"?, ?, ?, ? " + 
+			",?, CURRENT, ?, CURRENT " + 
+			",CURRENT, ?, ?, ?, ?, ?, " + 
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+	
+	private static String SEL_NRO_OT = "SELECT o1.ot_nro_orden " + 
+			"FROM ot_mac o1 " + 
+			"WHERE o1.ot_mensaje_xnear = ? " + 
+			"AND o1.ot_fecha_inicio = (SELECT MAX(o2.ot_fecha_inicio) FROM ot_mac o2 " + 
+			"	WHERE o2.ot_mensaje_xnear = o1.ot_mensaje_xnear " + 
+			"	AND o2.ot_estado = 'C' ) ";
+	
+	private static String INS_OT_HISEVEN = "INSERT INTO ot_hiseven ( " + 
+			"ots_nro_orden, " + 
+			"ots_numero_cliente, " + 
+			"ots_status, " + 
+			"ots_fecha, " + 
+			"ots_observac, " + 
+			"ots_fecha_proc " + 
+			")VALUES( " + 
+			"?, ?, ?, CURRENT, 'INICIADA', CURRENT) ";
+	
+	private static String SEL_PRECINTOS = "SELECT codigo_ubicacion, " + 
+			"fecha_movimiento " + 
+			"FROM sellos " + 
+			"WHERE numero_cliente = ? " + 
+			"AND numero_medidor = ? " + 
+			"AND marca_medidor  = ? " + 
+			"AND estado_insta = '6' " + 
+			"UNION " + 
+			"SELECT '0', " + 
+			"DATE(fecha_estado) " + 
+			"FROM prt_precintos e " + 
+			"WHERE e.numero_cliente = ? " + 
+			"AND e.estado_actual = '08' " + 
+			"AND e.fecha_estado = (SELECT MAX(e2.fecha_estado) " + 
+			"   FROM prt_precintos e2 " + 
+			"   WHERE e.numero_cliente = e2.numero_cliente " + 
+			"   AND e.estado_actual = e2.estado_actual ) " + 
+			"ORDER BY 2 DESC "; 
+			
+	private static String INS_OT_MAC_SAP = "INSERT INTO ot_mac_sap ( " + 
+			"oms_tipo_ifaz, " + 
+			"oms_nro_orden, " + 
+			"oms_tipo_traba, " + 
+			"oms_sucursal, " + 
+			"oms_area_ejecuta, " + 
+			"oms_motivo, " + 
+			"oms_fecha_ini, " + 
+			"oms_obs_dir, " + 
+			"oms_obs_lectu, " + 
+			"oms_obs_segen, " + 
+			"oms_area_interloc, " + 
+			"oms_nro_medidor, " + 
+			"oms_marca_med, " + 
+			"oms_modelo_med, " + 
+			"oms_cla_servi, " + 
+			"oms_potencia, " + 
+			"oms_tension, " + 
+			"oms_acometida, " + 
+			"oms_toma, " + 
+			"oms_conexion, " + 
+			"oms_pre1_ubic, " + 
+			"oms_pre2_ubic, " + 
+			"oms_pre3_ubic, " + 
+			"oms_ruta_lectura, " + 
+			"oms_nombre_cli, " + 
+			"oms_nro_cli, " + 
+			"oms_nom_entre, " + 
+			"oms_nom_entre1, " + 
+			"oms_telefono, " + 
+			"oms_nom_calle, " + 
+			"oms_nro_dir, " + 
+			"oms_nom_partido, " + 
+			"oms_piso_dir, " + 
+			"oms_depto_dir, " + 
+			"oms_nom_comuna, " + 
+			"oms_cod_postal, " + 
+			"oms_fecha_vto, " + 
+			"oms_codbar, " + 
+			"oms_rol_creador, " + 
+			"oms_nombre_rol, " + 
+			"oms_proced, " + 
+			"oms_nro_proced " + 
+			")VALUES( " + 
+			"?, ?, ?, ?, ?, ?, CURRENT, " + 
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, " + 
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, " + 
+			"?, ?, ?, ?, ?, ?, ?, ?, ?, " + 
+			"?, ?, ?, ?, ?, ?, ?, ?) ";
+	
+	private static String SEL_NRO_CB = "SELECT mod_nrocb FROM modelo " + 
+			"WHERE mar_codigo = ? " + 
+			"AND mod_codigo = ? ";
+	
 }

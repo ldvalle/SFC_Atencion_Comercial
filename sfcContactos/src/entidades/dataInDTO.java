@@ -38,13 +38,13 @@ public class dataInDTO {
 		          this.observaciones=(String) obj1.get("observaciones");
 	          }else if(sTipoSol.equals("CALCOM")) {
 	        	  this.numero_cliente = (Long) obj1.get("numero_cliente");
-	        	  this.sucursal=(String) obj1.get("sucursal");
-	        	  this.tema=(int) obj1.get("tema");
-	        	  this.motivo=(String) obj1.get("motivo");
-	        	  this.canal=(String) obj1.get("canal");
-	        	  this.nroReclamo=(String) obj1.get("nro_reclamo");
-	        	  this.tarifa=(String) obj1.get("tarifa");
-	        	  this.origen=(String) obj1.get("origen");
+	        	  this.sucursal = (String) obj1.get("sucursal");
+	        	  this.tema = Integer.parseInt( (String) (obj1.get("tema")));
+	        	  this.motivo = (String) obj1.get("motivo");
+	        	  this.canal = (String) obj1.get("canal");
+	        	  this.nroReclamo = (String) obj1.get("nro_reclamo");
+	        	  this.tarifa = (String) obj1.get("tarifa");
+	        	  this.origen = (String) obj1.get("origen");
 	          }else {
 	        	  System.out.println("Tipo de Solicitud Comercial Desconocida.");
 	          }

@@ -27,7 +27,6 @@ public class ceMensajeDTO {
 		String sFechaCorta=fechaF.format(fechaInicio);
 		String sLinea="";
 		
-		
 		this.lMensaje = lNroMensaje;
 		this.sProced = sProcedimiento;
 		this.sEtapa = "MODIFICACION";

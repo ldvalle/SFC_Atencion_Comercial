@@ -5,4 +5,5 @@ public class temaTrabajo {
 	public String sDescTema;
 	public String sCodTrabajo;
 	public String sDescTrabajo;
+	public String sGeneraOT;
 }

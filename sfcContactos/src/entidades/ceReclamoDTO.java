@@ -204,6 +204,7 @@ public class ceReclamoDTO {
 		}else {
 			//días hábiles
 			i=1;
+			miFecha=d;
 			while(i<=iPlazo) {
 				miFecha = sumaDias(miFecha, 1);
 				iDia=getDiaSemana(miFecha);
