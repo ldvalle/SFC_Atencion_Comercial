@@ -40,7 +40,7 @@ public class contactoDAO {
 				
 				miReg.caso = rs.getLong("caso");
 				miReg.nro_orden = rs.getLong("nro_orden");
-				miReg.data_in = rs.getString("data_in");
+				miReg.data_in = "[" + rs.getString("data_in").trim() + "]";
 				
 				miLista.add(miReg);
 			}
@@ -1443,6 +1443,8 @@ System.out.println("Le va a dar los precintos");
 	   sql += "co_fecha_estado, ";
 	   sql += "co_multi ";
 	   sql += ")VALUES( ";
+
+System.out.println(String.format("Tarifa [%s] Sucursal [%s]", regCto.co_tarifa, regCto.co_suc_cli));
 
 	   sql += regCto.sfc_caso + ", ";
 	   sql += regCto.sfc_nro_orden + ", ";

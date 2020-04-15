@@ -153,7 +153,8 @@ public class proceSolSRV {
 			miCto.co_tipo_doc = regCliente.tip_doc;
 			miCto.co_nro_doc = String.valueOf(regCliente.nro_doc);
 			miCto.co_tarifa = regCliente.tarifa;
-			miCto.co_suc_cli = regParam.sSucurPadre;
+			//miCto.co_suc_cli = regParam.sSucurPadre;
+			miCto.co_suc_cli = regCliente.sucursal;
 			miCto.co_cen_cli = regCliente.sucursal;
 			miCto.co_plan = regCliente.sector;
 			miCto.co_nombre = regCliente.nombre.trim();
@@ -165,7 +166,8 @@ public class proceSolSRV {
 			miCto.co_partido = regCliente.nom_partido.trim();
 			miCto.co_codpos = regCliente.cod_postal;
 			miCto.co_nro_cuit = regCliente.rut;
-			miCto.co_rol_inicio = "SF" + regCliente.sucursal;
+			//miCto.co_rol_inicio = "SF" + regCliente.sucursal;
+			miCto.co_rol_inicio = "SALESFORCE";
 			//miCto.co_cod_medio;
 			//miCto.co_fecha_inicio;   
 			miCto.co_suc_ag_contacto = "0100";

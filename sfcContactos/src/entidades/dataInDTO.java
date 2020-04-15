@@ -18,7 +18,8 @@ public class dataInDTO {
 	   public String	nroReclamo;
 	   public String	tarifa;
 	   public String	origen;
-
+	   public String	sAux;
+	   
 	   public dataInDTO(interfaceDTO regIn, String sTipoSol) {
 		   String s = regIn.data_in;
 		   JSONParser parser = new JSONParser();
@@ -30,12 +31,24 @@ public class dataInDTO {
 
 	          JSONObject obj1 = (JSONObject)array.get(0);
 	          if(sTipoSol.equals("CONTACTO")) {
+	        	  /*
 		          this.numero_cliente = (Long) obj1.get("numero_cliente");
 		          this.sucursal=(String) obj1.get("sucursal");
 		          this.motivo=(String) obj1.get("motivo");
 		          this.sub_motivo=(String) obj1.get("sub_motivo");
 		          this.trabajo=(String) obj1.get("trabajo");
 		          this.observaciones=(String) obj1.get("observaciones");
+		          */
+		          this.numero_cliente = Long.parseLong((String) obj1.get("numeroSuministro"));
+		          //this.sucursal=(String) obj1.get("sucursal");
+		          this.motivo=(String) obj1.get("motivo");
+		          this.sub_motivo=(String) obj1.get("subMotivo");
+		          //this.trabajo=(String) obj1.get("trabajo");
+		          // #4 text = text.replaceAll("\\r\\n|\\r|\\n", " ");
+		          sAux = (String) obj1.get("comentarios");
+		          if(sAux != null)
+		        	  this.observaciones= sAux.replaceAll("\\r\\n|\\r|\\n", " ");
+	        	  
 	          }else if(sTipoSol.equals("CALCOM")) {
 	        	  this.numero_cliente = (Long) obj1.get("numero_cliente");
 	        	  this.sucursal = (String) obj1.get("sucursal");
